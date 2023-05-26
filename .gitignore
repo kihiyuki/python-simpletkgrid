@@ -160,6 +160,6 @@ cython_debug/
 #.idea/
 
 # tkinter-template
-/tmp/
+tmp/
 *.ini
 *.ini_[0-9]*
