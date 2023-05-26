@@ -76,7 +76,7 @@ def main(args: Optional[List[str]] = None) -> None:
     if args.workdir is not None:
         config["workdir"] = args.workdir
 
-    # config.conv()
+    config.cast()
 
     if background_mode:
         pass

@@ -21,8 +21,7 @@ from .define import (
     __version__,
     APPNAME_FULL,
     URL,
-    CONFIGTYPES,
-    messages
+    messages,
 )
 
 
@@ -276,12 +275,12 @@ def main(config: Config, args) -> None:
                 return None
 
             for k, v in config.to_dict().items():
-                self.labels.add(f"{k}: {messages.config.__getattribute__(k)}", self.labelkw, self.gridkw, name=k)
+                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", self.labelkw, self.gridkw, name=k)
                 self.entries[k] = Entry(self.frm, width=entry_width)
                 self.entries[k].insert(END, str(v))
                 self.entries[k].grid(**self.gridkw.pull())
-                # if CONFIGTYPES[k] in ["file", "dir"]:
-                #     self.buttons.add("Browse", lambda: _diag(k, CONFIGTYPES[k]), self.gridkw, name=f"{k}_diag_btn")
+                # if type(config.default[k]).__name__ in ["Path"]:
+                #     self.buttons.add("Browse", lambda: _diag(k, "file"), self.gridkw, name=f"{k}_diag_btn")
                 if k == "workdir":
                     self.buttons.add("Browse", lambda: _diag("workdir", "dir"), self.gridkw, name=f"workdir_btn")
 
@@ -296,7 +295,6 @@ def main(config: Config, args) -> None:
             _changed = False
             for k, entry in self.entries.items():
                 v = entry.get()
-                # XXX:
                 if str(v) != str(config[k]):
                     _changed = True
                     config[k] = v
@@ -311,7 +309,7 @@ def main(config: Config, args) -> None:
                 )
 
                 # reload
-                # config.conv()
+                config.cast()
                 self.close()
                 # _reload(config=config)
                 messagebox.showinfo("Config", "Saved.")

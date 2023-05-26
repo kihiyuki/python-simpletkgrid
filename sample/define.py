@@ -8,11 +8,6 @@ DEFAULT_CONFIG = dict(
     workdir = ".",
     n = 30,
 )
-# dir, file, str, int, float
-CONFIGTYPES = dict(
-    workdir = "dir",
-    n = "int",
-)
 
 
 APPNAME = "sample"
