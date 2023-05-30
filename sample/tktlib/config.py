@@ -1,6 +1,8 @@
 # https://github.com/kihiyuki/python-snippets
 # Copyright (c) 2022 kihiyuki
 # Released under the MIT license
+# Supported Python versions: 3.7, 3.8, 3.9, 3.10, 3.11
+# Requires: (using only Python Standard Library)
 import shutil
 from configparser import ConfigParser, DEFAULTSECT
 from datetime import datetime
@@ -9,67 +11,22 @@ from typing import Optional, Union, Dict, Any
 from warnings import warn
 
 
-__version__ = "2.2.0"
+__version__ = "2.2.4"
 __all__ = [
     "Config",
 ]
 DEFAULTFILE: Optional[str] = "config.ini"
-
-
-def _have_section(data: dict) -> bool:
-    have_section = True
-    for v in data.values():
-        if not isinstance(v, dict):
-            have_section = False
-            break
-    return have_section
-
-
-def _init_configdict(
-    data: dict,
-    section: Optional[str] = None,
-    auto_sectionalize: bool = False,
-) -> Dict[str, dict]:
-    if _have_section(data):
-        if section is None:
-            pass
-        elif section not in data:
-            data[section] = dict()
-    else:
-        if section is None:
-            if auto_sectionalize:
-                section = DEFAULTSECT
-            else:
-                raise ValueError("Configdata must have section")
-        data = {section: data}
-
-    data_ret = dict()
-    for s, d in data.items():
-        if type(s) is not str:
-            warn(f"Section name must be string: s -> '{s}'")
-            s = str(s)
-        data_ret[s] = dict()
-
-        for k, v in d.items():
-            if type(k) is not str:
-                warn(f"Key must be string: {k} -> '{k}'")
-                k = str(k)
-            k_lower = k.lower()
-            if k != k_lower:
-                warn(f"Key must be lowercase: '{k}' -> '{k_lower}'")
-            data_ret[s][k_lower] = v
-
-    return data_ret
-
+_DDT = Dict[str, Dict[str, Any]]
+_DT = Dict[str, _DDT]
 
 class Config(object):
     def __init__(
         self,
-        __d: Union[str, Path, dict, None] = DEFAULTFILE,
+        __d: Union[str, Path, Dict[str, Any], Dict[str, Dict[str, Any]], None] = DEFAULTFILE,
         section: str = DEFAULTSECT,
         encoding: Optional[str] = None,
         notfound_ok: bool = False,
-        default: Optional[dict] = None,
+        default: Union[Dict[str, Any], Dict[str, Dict[str, Any]], None] = None,
         cast: bool = False,
         strict_cast: bool = False,
         strict_key: bool = False,
@@ -91,86 +48,146 @@ class Config(object):
             ValueError: If `strict_cast` is True and failed to cast.
             KeyError: If `strict_key` is True and some keys of configfile is not in default.
         """
-        self.section = section
         self._cast = cast
         self._strict_cast = strict_cast
         self._strict_key = strict_key
 
-        self.filepath: Path
-        self.default: dict
-        # self.parser = ConfigParser()
+        self.filepath: Optional[Path] = None
+        self.default: _DT
+        self.data: _DT
+        self.section: str = self._autocorrect(section, name="section name")
 
         if default is None:
-            default = {section: {}}
-        if not _have_section(default):
-            default = {section: default}
-        self.default = _init_configdict(
+            default = {self.section: {}}
+        self.default = self._init_configdict(
             default,
-            # section=section,
-            # auto_sectionalize=True,
+            section=self.section,
         )
 
         if __d is None:
-            self.data = {section: {}}
+            self.data = {self.section: {}}
         else:
             if type(__d) is dict:
                 file = None
                 data = __d
-                if not _have_section(data):
-                    data = {section: data}
+                if not self._have_section(data):
+                    data = {self.section: data}
             else:
                 file = __d
                 data = None
+
+            # load all sections(section = None)
             self.data = self._load(
                 file=file,
                 data=data,
+                section=None,
                 encoding=encoding,
                 notfound_ok=notfound_ok,
             )
         return None
 
+    @staticmethod
+    def _have_section(data: _DDT) -> bool:
+        """Check if all values of data are dict"""
+        return all([isinstance(v, dict) for v in data.values()])
+
+    @staticmethod
+    def _autocorrect(
+        __x: Any,
+        name: str = "",
+        string: bool = True,
+        lower: bool = False,
+        convert: bool = True,
+    ) -> str:
+        if string and type(__x) is not str:
+            if convert:
+                __x = str(__x)
+                warn(f"Convert {name} to string: {__x}")
+            else:
+                raise TypeError(f"{name} must be string: {__x}({type(__x)})")
+        if lower and not __x.islower():
+            if convert:
+                __x = __x.lower()
+                warn(f"Convert {name} to lowercase: {__x}")
+            else:
+                raise ValueError(f"{name} must be lowercase: {__x}")
+        return __x
+
+    # @staticmethod
+    def _init_configdict(
+        self,
+        data: _DDT,
+        section: Optional[str] = None,
+    ) -> Dict[str, dict]:
+        if self._have_section(data):
+            if section is None:
+                pass
+            elif section not in data:
+                data[section] = dict()
+        else:
+            if section is None:
+                raise ValueError("Configdata must have section")
+            data = {section: data}
+
+        data: _DT
+        data_ret: _DT = dict()
+        for s, d in data.items():
+            s = self._autocorrect(s, name="section name")
+            data_ret[s] = dict()
+
+            for k, v in d.items():
+                k = self._autocorrect(k, name="key", lower=True)
+                data_ret[s][k] = v
+
+        return data_ret
+
     def _cast_value(self, __v: str, __v_def: Any) -> Any:
         try:
-            _type = type(__v_def)
+            _typename = type(__v_def).__name__
+            # NOTE: bool must come before int
+            for _type in [str, bool, float, int, list, tuple, set, dict]:
+                if isinstance(__v_def, _type):
+                    _typename = _type.__name__
+                    break
             _raise = False
-            if _type in [str]:
+            if _typename in {"str"}:
                 pass
-            elif _type in [float, int]:
+            elif _typename in {"float", "int"}:
                 __v = _type(__v)
-            elif _type in [bool]:
-                if __v.lower() in ["true", "1"]:
+            elif _typename in {"bool"}:
+                if __v.lower() in {"true", "1"}:
                     __v = True
-                elif __v.lower() in ["false", "0"]:
+                elif __v.lower() in {"false", "0"}:
                     __v = False
                 else:
                     _raise = True
-            elif _type in [list]:
+            elif _typename in {"list"}:
                 if __v.startswith("[") and __v.endswith("]"):
                     __v = eval(__v)
                 else:
                     __v = __v.split(",")
-            elif _type in [tuple]:
+            elif _typename in {"tuple"}:
                 if __v.startswith("(") and __v.endswith(")"):
                     __v = eval(__v)
                 else:
                     __v = tuple(__v.split(","))
-            elif _type in [set]:
+            elif _typename in {"set"}:
                 if __v.startswith("{") and __v.endswith("}"):
                     __v = eval(__v)
                 else:
                     __v = set(__v.split(","))
-            elif _type in [dict]:
+            elif _typename in {"dict"}:
                 if __v.startswith("{") and __v.endswith("}"):
                     __v = eval(__v)
                 else:
                     __v = dict(tuple(x.split(":")) for x in __v.split(","))
             if _raise:
-                raise ValueError(f'{_type.__name__}("{__v}")')
+                raise ValueError(f'{_typename}("{__v}")')
         except ValueError as e:
             if self._strict_cast:
                 raise ValueError(e)
             else:
-                warn(f"cast failed: {e}")
+                warn(f"cast failed: {e}", UserWarning)
         return __v
 
     def cast(
@@ -202,11 +219,11 @@ class Config(object):
     def _load(
         self,
         file: Union[str, Path, None] = None,
-        data: Optional[dict] = None,
+        data: Union[_DT, _DDT, None] = None,
         section: Optional[str] = None,
         encoding: Optional[str] = None,
         notfound_ok: bool = False,
-    ) -> dict:
+    ) -> _DT:
         if (file is not None) and (data is not None):
             raise ValueError("Both file and data are given")
         elif file is not None:
@@ -217,17 +234,14 @@ class Config(object):
                     parser.read_file(f)
                 data = self.__parser_to_dict(parser)
             elif notfound_ok:
+                warn(f"No such file or directory: {str(self.filepath)}", UserWarning)
                 data = {DEFAULTSECT: {}}
             else:
                 raise FileNotFoundError(file)
         elif data is not None:
-            if _have_section(data):
-                pass
-            elif section is not None:
-                data = {section: data}
-            data = _init_configdict(
-                data,
-                auto_sectionalize=True,
+            data = self._init_configdict(
+                data=data,
+                section=section,
             )
         else:
             raise ValueError("Both file and data are None")
@@ -241,17 +255,20 @@ class Config(object):
             sections_load = [DEFAULTSECT] + sections_load
 
         # add default sections
-        for k in self.default.keys():
-            if k not in sections_load:
-                sections_load.append(k)
+        for s in self.default.keys():
+            if s not in sections_load:
+                sections_load.append(s)
 
-        data_ret = dict()
+        data_ret: _DT = dict()
         for s in sections_load:
-            if s in self.default:
+            if s in self.default.keys():
                 # initialize with default values
                 data_ret[s] = self.default[s].copy()
+                _empty_default = len(self.default[s]) == 0
             else:
                 data_ret[s] = dict()
+                _empty_default = True
+
             if s not in data.keys():
                 continue
             for k, v in data[s].items():
@@ -259,19 +276,22 @@ class Config(object):
                     if self._cast:
                         v = self._cast_value(v, data_ret[s][k])
                 elif self._strict_key:
-                    raise KeyError(k)
+                    if _empty_default:
+                        pass
+                    else:
+                        raise KeyError(k)
                 data_ret[s][k] = v
 
         return data_ret
 
     @staticmethod
-    def __parser_to_dict(__p: ConfigParser) -> dict:
+    def __parser_to_dict(__p: ConfigParser) -> _DT:
         d = dict()
         for k, v in __p.items():
             d[k] = dict(v)
         return d
 
-    def to_dict(self, allsection: bool = False) -> dict:
+    def to_dict(self, allsection: bool = False) -> Union[_DT, _DDT]:
         """Convert to dict
 
         Example:
@@ -289,20 +309,33 @@ class Config(object):
         else:
             return self.data[self.section].copy()
 
-    def copy(self):
+    def copy(
+        self,
+        cast: Optional[bool] = None,
+        strict_key: Optional[bool] = None,
+        strict_cast: Optional[bool] = None,
+        ):
+        if cast is None:
+            cast = self._cast
+        if strict_key is None:
+            strict_key = self._strict_key
+        if strict_cast is None:
+            strict_cast = self._strict_cast
         return type(self)(
             self.data,
             section=self.section,
             default=self.default,
-            cast=self.cast,
-            strict_cast=self._strict_cast,
-            strict_key=self._strict_key,
+            cast=cast,
+            strict_cast=strict_cast,
+            strict_key=strict_key,
         )
 
-    def __getitem__(self, __key):
+    def __getitem__(self, __key: str):
+        __key = self._autocorrect(__key, name="key", lower=True)
         return self.data[self.section][__key]
 
-    def __setitem__(self, __key, __value) -> None:
+    def __setitem__(self, __key: str, __value) -> None:
+        __key = self._autocorrect(__key, name="key", lower=True)
         if self.section not in self.data.keys():
             if self._strict_key:
                 raise KeyError(self.section)
@@ -310,7 +343,7 @@ class Config(object):
                 self.data[self.section] = dict()
 
         if __key in self.data[self.section].keys():
-            if self.cast:
+            if self._cast:
                 try:
                     __value = type(self.data[self.section][__key])(__value)
                 except ValueError as e:
@@ -328,16 +361,14 @@ class Config(object):
         return f"{__class__.__name__}({repr(self.data)})"
 
     def __eq__(self, __o: Any) -> bool:
-        if isinstance(__o, Config):
+        if isinstance(__o, type(self)):
             # Config vs Config
-            if self.to_dict(allsection=True) == __o.to_dict(allsection=True):
-                return True
+            return self.to_dict(allsection=True) == __o.to_dict(allsection=True)
         elif isinstance(__o, ConfigParser):
             # Config vs ConfigParser
             parser = ConfigParser()
             parser.read_dict(self.data)
-            if parser == __o:
-                return True
+            return parser == __o
         elif type(__o) is dict:
             # Config vs dict
             data = self.to_dict(allsection=True)
@@ -345,8 +376,7 @@ class Config(object):
                 return True
             if len(data[DEFAULTSECT]) == 0:
                 del data[DEFAULTSECT]
-                if data == __o:
-                    return True
+                return data == __o
         return False
 
     def save(
@@ -372,9 +402,14 @@ class Config(object):
             ValueError: If `mode` is unknown
         """
         if file is None:
-            filepath = self.filepath
+            if self.filepath is None:
+                raise ValueError("filepath is not set")
+            else:
+                filepath = self.filepath
         else:
             filepath = Path(file)
+        # if not filepath.parent.is_dir():
+        #     raise FileNotFoundError(filepath.parent)
 
         if section is None:
             data = self.data
