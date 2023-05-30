@@ -1,218 +1,27 @@
 import subprocess
 import webbrowser
-from typing import Optional, Union, Dict, Any
+from typing import Dict
 from datetime import datetime
 from pathlib import Path
 from tkinter import (
-    Tk,
-    ttk,
     filedialog,
     messagebox,
-    Toplevel,
     Entry,
-    Variable,
     StringVar,
     END,
-    W,
 )
 
-from .configlib import Config
+from .tktlib import (
+    Config,
+    RootWindow,
+    SubWindow,
+)
 from .define import (
     __version__,
     APPNAME_FULL,
     URL,
     messages,
 )
-
-
-class LabelKw(dict):
-    def __init__(self, fontsize: int = 12):
-        return super().__init__(
-            font = ("", fontsize),
-        )
-
-    @property
-    def big(self, ratio: float = 1.5):
-        _d = self.copy()
-        _d["font"] = ("", int(_d["font"][1] * ratio))
-        return _d
-
-
-class GridKw(object):
-    def __init__(self, maxcolumn: Optional[int] = None, sticky: str = W) -> None:
-        self.row: int = 0
-        self.column: int = 0
-        self.columnspan: int = 1
-        self.maxcolumn: Optional[int] = maxcolumn
-        self.sticky: str = sticky
-        return None
-
-    def lf(self, n: int = 1) -> None:
-        self.row += n
-        self.column = 0
-        return None
-
-    def next(self) -> None:
-        self.column += 1
-        if self.maxcolumn is None:
-            pass
-        elif self.column >= self.maxcolumn:
-            self.lf()
-        return None
-
-    def set(self, row: Optional[int] = None, column: Optional[int] = None) -> None:
-        if row is not None:
-            self.row = row
-        if column is not None:
-            self.column = column
-        return None
-
-    def pull(self, fullspan: bool = False) -> dict:
-        row = self.row
-        column = self.column
-        sticky = self.sticky
-        columnspan = self.columnspan
-        if fullspan:
-            columnspan = self.maxcolumn
-            self.lf()
-        else:
-            self.next()
-        return dict(
-            row = row,
-            column = column,
-            columnspan = columnspan,
-            sticky = sticky,
-        )
-
-
-class StringVars(object):
-    def __init__(self, keys: Union[list, tuple, set], defaltvalue: Optional[str] = None) -> None:
-        self._data: Dict[Any, StringVar] = dict()
-        for k in keys:
-            self._data[k] = StringVar()
-            if defaltvalue is None:
-                self._data[k].set(k)
-            else:
-                self._data[k].set(defaltvalue)
-        return None
-
-    def get(self, key: Any) -> str:
-        return self._data[key]
-
-    def set(self, key: Any, value: str) -> None:
-        return self._data[key].set(value)
-
-    def __getitem__(self, key: Any):
-        return self.get(key=key)
-
-    def __setitem__(self, key: Any, value: str):
-        return self.set(key=key, value=value)
-
-
-class GridObject(object):
-    def __init__(self, frame: ttk.Frame) -> None:
-        self._data: Dict[str, ttk.Widget] = dict()
-        self.frame: ttk.Frame = frame
-        return None
-
-    def add(
-        self,
-        __object,
-        gridkw: GridKw,
-        text: Optional[str] = None,
-        name: Optional[str] = None,
-        fullspan: bool = False,
-    ) -> None:
-        if name is None:
-            name = text
-        if name in self._data:
-            raise ValueError(f"Name '{name}' is always used")
-        self._data[name] = __object
-        return self._data[name].grid(**gridkw.pull(fullspan=fullspan))
-
-
-class RadioButtons(GridObject):
-    def add(
-            self,
-            text: str,
-            value: Any,
-            variable: Variable,
-            gridkw: GridKw,
-            name: str = None,
-            fullspan: bool = False,
-        ) -> None:
-        _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
-
-
-class Buttons(GridObject):
-    def add(
-        self,
-        text: str,
-        command,
-        gridkw: GridKw,
-        name: Optional[str] = None,
-        fullspan: bool = False,
-    ) -> None:
-        _obj = ttk.Button(self.frame, text=text, command=command)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
-
-
-class Labels(GridObject):
-    def add(
-        self,
-        text: Any,
-        labelkw: LabelKw,
-        gridkw: GridKw,
-        name: Optional[str] = None,
-        fullspan: bool = False,
-    ) -> None:
-        if type(text) is str:
-            _obj = ttk.Label(self.frame, text=text, **labelkw)
-        else:
-            _obj = ttk.Label(self.frame, textvariable=text, **labelkw)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
-
-
-class SubWindow(Toplevel):
-    def __init__(
-        self,
-        title: str,
-        resizable: bool = False,
-        padding: int = 20,
-        maxcolumn: int = 1,
-        sticky: str = W,
-        fontsize: int = 12,
-        button: bool = False,
-        label: bool = False,
-        radiobutton: bool = False,
-    ) -> None:
-        _ret = super().__init__()
-
-        self.title(title)
-        self.resizable(resizable, resizable)
-        self.grab_set()
-        self.focus_set()
-
-        self.frm = ttk.Frame(self, padding=padding)
-        self.frm.grid()
-
-        self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
-        self.labelkw = LabelKw(fontsize=fontsize)
-
-        if button:
-            self.buttons = Buttons(self.frm)
-        if label:
-            self.labels = Labels(self.frm)
-        if radiobutton:
-            self.radiobuttons = RadioButtons(self.frm)
-
-        return _ret
-
-    def close(self, event=None) -> None:
-        self.grab_release()
-        self.destroy()
-        return None
 
 
 def main(config: Config, args) -> None:
@@ -335,7 +144,7 @@ def main(config: Config, args) -> None:
         def update(self, event=None) -> None:
             val = self.var.get()
             if len(val) > 0:
-                vars.set("test01", val)
+                root.stringvars.set("test01", val)
                 self.close()
             else:
                 messagebox.showwarning("Warning", f"Please select.")
@@ -368,60 +177,38 @@ def main(config: Config, args) -> None:
     def _about(event=None):
         aw = AboutWindow()
 
-    def _close(event=None):
-        root.destroy()
-
     def _config(event=None):
         cw = ConfigWindow()
 
     def _test01(event=None):
         tw01 = TestWindow01()
 
-    root = Tk()
+    root = RootWindow(maxcolumn=4, padding=20)
     root.title(APPNAME_FULL)
     root.resizable(False, False)
-    frm = ttk.Frame(root, padding=20)
-    frm.grid()
-
-    gridkw = GridKw(maxcolumn=4)
-    labelkw = LabelKw()
-
-    buttons = Buttons(frm)
-    labels = Labels(frm)
-
-    vars = StringVars(["test01"], defaltvalue="")
-    # _reload(config=config)
-
-    # labels.add(datasetinfo.get("date"), labelkw, gridkw, name="date", fullspan=True)
-    # labels.add("Dataset info", labelkw.big, gridkw, name="title.d", fullspan=True)
-    # for k in ["datafile", "workdir"]:
-    #     labels.add(datasetinfo.get(k), labelkw, gridkw, name=k, fullspan=True)
-    # for k in ["count_all", "count_annotated"]:
-    #     labels.add(datasetinfo.get(k), labelkw, gridkw, name=k, fullspan=True)
-
-    # labels.add("Working directory", labelkw.big, gridkw, name="title.w", fullspan=True)
-    buttons.add("[O]pen", _open, gridkw, name="open")
-    gridkw.lf()
+    root.buttons.add("[O]pen", _open, root.gridkw, name="open")
+    root.gridkw.lf()
 
     # labels.add("Result", labelkw.big, gridkw, name="title.r", fullspan=True)
-    buttons.add("Export", _export, gridkw, name="export")
-    gridkw.lf()
+    root.buttons.add("Export", _export, root.gridkw, name="export")
+    root.gridkw.lf()
 
     # labels.add("----", labelkw.big, gridkw, name="title.t2", fullspan=True)
-    buttons.add("Test01", _test01, gridkw, name="test01")
-    labels.add(vars.get("test01"), labelkw, gridkw, name="test01.v")
-    gridkw.lf()
+    root.stringvars.add("test01")
+    root.buttons.add("Test01", _test01, root.gridkw, name="test01")
+    root.labels.add(root.stringvars.get("test01"), root.labelkw, root.gridkw, name="test01.v")
+    root.gridkw.lf()
 
     # labels.add("----", labelkw.big, gridkw, name="title.t", fullspan=True)
-    buttons.add("Config", _config, gridkw, name="config")
+    root.buttons.add("Config", _config, root.gridkw, name="config")
     # buttons.add("Reload[F5]", _reload, gridkw, name="reload")
-    buttons.add("Quit[Esc]", _close, gridkw, name="quit")
-    gridkw.lf()
+    root.buttons.add("Quit[Esc]", root.close, root.gridkw, name="quit")
+    root.gridkw.lf()
 
     # keybind
     root.bind("o", _open)
     root.bind("<F1>", _about)
     # root.bind("<F5>", _reload)
-    root.bind("<Escape>", _close)
+    root.bind("<Escape>", root.close)
 
     root.mainloop()
