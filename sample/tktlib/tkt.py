@@ -1,3 +1,8 @@
+# https://github.com/kihiyuki/tkinter-template
+# Copyright (c) 2023 kihiyuki
+# Released under the MIT license
+# Supported Python versions: 3.8
+# Requires: (using only Python Standard Library)
 from typing import Optional, Union, Dict, Any
 from tkinter import (
     Tk,
