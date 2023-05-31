@@ -3,7 +3,8 @@ from typing import Optional, List
 from pathlib import Path
 
 from .gui import main as gui_main
-from .configlib import Config, DEFAULTSECT
+from .tktlib import Config
+from .tktlib.config import DEFAULTSECT
 from .define import (
     __version__,
     APPNAME,
@@ -76,7 +77,7 @@ def main(args: Optional[List[str]] = None) -> None:
     if args.workdir is not None:
         config["workdir"] = args.workdir
 
-    # config.conv()
+    config.cast()
 
     if background_mode:
         pass
