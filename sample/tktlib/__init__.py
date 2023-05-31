@@ -7,11 +7,13 @@ from .config import Config
 from .tkt import (
     RootWindow,
     SubWindow,
+    dialog,
 )
 
 __all__ = [
     "Config",
     "RootWindow",
     "SubWindow",
+    "dialog",
 ]
 __version__ = "0.0.1"

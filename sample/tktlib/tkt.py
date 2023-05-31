@@ -4,12 +4,14 @@
 # Supported Python versions: 3.8
 # Requires: (using only Python Standard Library)
 from typing import Optional, Union, Dict, Any
+from pathlib import Path
 from tkinter import (
     Tk,
     ttk,
     Toplevel,
     Variable,
     StringVar,
+    filedialog,
     W,
 )
 
@@ -229,3 +231,52 @@ class SubWindow(Toplevel):
         self.grab_release()
         self.destroy()
         return None
+
+
+class dialog(object):
+    @staticmethod
+    def askopenpath(
+        initialpath: Union[str, Path],
+        mode: str = "f",
+        returntype: str = "str",
+    ) -> Union[str, Path, None]:
+        """askopenfilename/askdirectory
+
+        Args:
+            mode: 'f'=file, 'd'=dir
+            returntype: 'str', 'Path'
+        """
+        initialpath = Path(initialpath).resolve()
+        if initialpath.is_dir():
+            dirpath = str(initialpath)
+            filename = None
+        elif initialpath.parent.is_dir():
+            dirpath = str(initialpath.parent)
+            filename = str(initialpath.name)
+        else:
+            dirpath = None
+            filename = None
+
+        mode = mode.lower()
+        if mode in {"f", "file"}:
+            selectedpath = filedialog.askopenfilename(
+                title="Choose a file",
+                initialfile=filename,
+                initialdir=dirpath,
+            )
+        elif mode in {"d", "dir", "directory"}:
+            selectedpath = filedialog.askdirectory(
+                title="Choose a directory",
+                initialdir=dirpath,
+            )
+        else:
+            raise ValueError(f"Invalid mode: '{mode}'")
+        if len(selectedpath) > 0:
+            if returntype == "str":
+                return selectedpath
+            elif returntype == "Path":
+                return Path(selectedpath)
+            else:
+                raise ValueError(f"Invalid returntype: '{returntype}'")
+        else:
+            return None

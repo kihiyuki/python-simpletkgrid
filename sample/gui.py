@@ -15,6 +15,7 @@ from .tktlib import (
     Config,
     RootWindow,
     SubWindow,
+    dialog,
 )
 from .define import (
     __version__,
@@ -51,36 +52,12 @@ def main(config: Config, args) -> None:
                 k: str,
                 type_: str = "file",
             ) -> None:
-                _initialfile = Path(self.entries[k].get())
-                _initialdir = _initialfile.parent
-                if _initialdir.is_dir():
-                    _initialdir = str(_initialdir)
-                else:
-                    _initialdir = None
-                if _initialfile.is_file():
-                    _initialfile = _initialfile.name
-                else:
-                    if _initialfile.is_dir():
-                        _initialdir = _initialfile
-                    _initialfile = None
-
-                if type_ == "file":
-                    _path = filedialog.askopenfilename(
-                        title="Choose a file",
-                        initialfile=_initialfile,
-                        initialdir=_initialdir,
-                    )
-                elif type_ == "dir":
-                    _path = filedialog.askdirectory(
-                        title="Choose a directory",
-                        initialdir=_initialdir,
-                    )
-                else:
-                    raise ValueError(f"invalid type: {type_}")
-
-                # Entry.set
-                self.entries[k].delete(0, END)
-                self.entries[k].insert(END, _path)
+                _path = dialog.askopenpath(self.entries[k].get(), mode="f")
+                print("path", _path)
+                if _path is not None:
+                    # Entry.set
+                    self.entries[k].delete(0, END)
+                    self.entries[k].insert(END, _path)
                 return None
 
             for k, v in config.to_dict().items():
