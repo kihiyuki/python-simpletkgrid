@@ -167,6 +167,7 @@ class GridObject(object):
     def __init__(self, frame: ttk.Frame) -> None:
         self._data: Dict[str, ttk.Widget] = dict()
         self.frame: ttk.Frame = frame
+        self._nameid: int = 0
         return None
 
     def add(
@@ -179,9 +180,13 @@ class GridObject(object):
     ) -> None:
         if name is None:
             name = text
+        if type(name) is not str:
+            name = "GRIDOBJECT_"
         if name in self._data:
-            raise ValueError(f"Name '{name}' is always used")
+            # raise ValueError(f"Name '{name}' is always used")
+            name += str(self._nameid)
         self._data[name] = __object
+        self._nameid += 1
         return self._data[name].grid(**gridkw.pull(fullspan=fullspan))
 
 
@@ -198,7 +203,7 @@ class Labels(GridObject):
             _obj = ttk.Label(self.frame, text=text, **labelkw)
         else:
             _obj = ttk.Label(self.frame, textvariable=text, **labelkw)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
 class Buttons(GridObject):
@@ -211,7 +216,7 @@ class Buttons(GridObject):
         fullspan: bool = False,
     ) -> None:
         _obj = ttk.Button(self.frame, text=text, command=command)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
 class RadioButtons(GridObject):
@@ -221,11 +226,11 @@ class RadioButtons(GridObject):
             value: Any,
             variable: Variable,
             gridkw: GridKw,
-            name: str = None,
+            name: Optional[str] = None,
             fullspan: bool = False,
         ) -> None:
         _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value)
-        return super().add(_obj, gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
 class RootWindow(Tk):
@@ -273,11 +278,36 @@ class SubWindow(Toplevel):
         self.labelkw = LabelKw(fontsize=fontsize)
 
         if button:
-            self.buttons = Buttons(self.frame)
+            class _Buttons(Buttons):
+                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                    self._gridkw = gridkw
+                    return super().__init__(frame)
+                def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
+                    return super().add(text, command, self._gridkw, name, fullspan)
+            self.buttons = _Buttons(self.frame, self.gridkw)
         if label:
-            self.labels = Labels(self.frame)
+            class _Labels(Labels):
+                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                    self._gridkw = gridkw
+                    return super().__init__(frame)
+                def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: LabelKw = self.labelkw, name: Optional[str] = None, fullspan: bool = False) -> None:
+                    if type(scale) is str:
+                        if scale == "big":
+                            labelkw = labelkw.big
+                        elif scale == "small":
+                            labelkw = labelkw.small
+                    else:
+                        labelkw = labelkw.specify_scale(scale)
+                    return super().add(text, labelkw, self._gridkw, name, fullspan)
+            self.labels = _Labels(self.frame, self.gridkw)
         if radiobutton:
-            self.radiobuttons = RadioButtons(self.frame)
+            class _RadioButtons(RadioButtons):
+                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                    self._gridkw = gridkw
+                    return super().__init__(frame)
+                def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
+                    return super().add(text, value, variable, self._gridkw, name, fullspan)
+            self.radiobuttons = _RadioButtons(self.frame, self.gridkw)
 
         return _ret
 

@@ -31,11 +31,11 @@ def main(config: Config, args) -> None:
         def __init__(self) -> None:
             ret = super().__init__(title="About", button=True, label=True)
 
-            self.labels.add(APPNAME_FULL, self.labelkw.big, self.gridkw)
-            self.labels.add(f"Website: {URL}", self.labelkw, self.gridkw)
+            self.labels.add(APPNAME_FULL, scale="big")
+            self.labels.add(f"Website: {URL}")
 
-            self.buttons.add("Open Website", self.open_url, self.gridkw)
-            self.buttons.add("Close", self.close, self.gridkw)
+            self.buttons.add("Open Website", self.open_url)
+            self.buttons.add("Close", self.close)
 
             return ret
 
@@ -59,17 +59,17 @@ def main(config: Config, args) -> None:
                 return None
 
             for k, v in config.to_dict().items():
-                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", self.labelkw, self.gridkw, name=k)
+                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", name=k)
                 self.entries.add(k, master=self.frame, width=entry_width)
                 self.entries.set(k, str(v))
                 self.entries.get_instance(k).grid(**self.gridkw.pull())
                 # if type(config.default[k]).__name__ in ["Path"]:
                 #     self.buttons.add("Browse", lambda: _diag(k, "file"), self.gridkw, name=f"{k}_diag_btn")
                 if k == "workdir":
-                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), self.gridkw, name=f"workdir_btn")
+                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), name=f"workdir_btn")
 
-            self.buttons.add("Save[Enter]", self.save, self.gridkw)
-            self.buttons.add("Cancel[ESC]", self.close, self.gridkw)
+            self.buttons.add("Save[Enter]", self.save)
+            self.buttons.add("Cancel[ESC]", self.close)
             self.bind("<Return>", self.save)
             self.bind("<Escape>", self.close)
 
@@ -103,8 +103,8 @@ def main(config: Config, args) -> None:
             self.radiobuttons.add("BBBBB", "B123", self.var, self.gridkw)
             self.radiobuttons.add("CCC C", "C123", self.var, self.gridkw)
 
-            self.buttons.add("Update[Enter]", self.update, self.gridkw, name="update")
-            self.buttons.add("Cancel[ESC]", self.close, self.gridkw, name="cancel")
+            self.buttons.add("Update[Enter]", self.update, self.gridkw)
+            self.buttons.add("Cancel[ESC]", self.close, self.gridkw)
             self.bind("<Return>", self.update)
             self.bind("<Escape>", self.close)
             return _ret
@@ -157,7 +157,7 @@ def main(config: Config, args) -> None:
     root = RootWindow(maxcolumn=4, padding=20)
     root.title(APPNAME_FULL)
     root.resizable(False, False)
-    root.buttons.add("[O]pen", _open, root.gridkw, name="open")
+    root.buttons.add("[O]pen", _open, root.gridkw)
     root.bind("o", _open)
     root.gridkw.lf()
 
