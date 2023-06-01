@@ -18,23 +18,26 @@ from tkinter import (
 )
 
 
+FONTSIZE = 12
+SCALE = 1.5
 class LabelKw(dict):
-    def __init__(self, fontsize: int = 12):
+    def __init__(self, fontsize: int = FONTSIZE):
         return super().__init__(
             font = ("", fontsize),
         )
 
-    @property
-    def big(self, ratio: float = 1.5) -> dict:
+    def specify_scale(self, scale: float) -> dict:
         _d = self.copy()
-        _d["font"] = ("", int(_d["font"][1] * ratio))
+        _d["font"] = ("", int(_d["font"][1] * scale))
         return _d
 
     @property
-    def small(self, ratio: float = 0.6666667) -> dict:
-        _d = self.copy()
-        _d["font"] = ("", int(_d["font"][1] * ratio))
-        return _d
+    def big(self) -> dict:
+        return self.specify_scale(SCALE)
+
+    @property
+    def small(self) -> dict:
+        return self.specify_scale(1 / SCALE)
 
 
 class GridKw(object):
@@ -47,6 +50,7 @@ class GridKw(object):
         return None
 
     def lf(self, n: int = 1) -> None:
+        """Line feed"""
         self.row += n
         self.column = 0
         return None
@@ -250,7 +254,7 @@ class SubWindow(Toplevel):
         padding: int = 20,
         maxcolumn: int = 1,
         sticky: str = W,
-        fontsize: int = 12,
+        fontsize: int = FONTSIZE,
         button: bool = False,
         label: bool = False,
         radiobutton: bool = False,
