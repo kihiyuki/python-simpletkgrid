@@ -234,17 +234,14 @@ class RadioButtons(GridObject):
 
 
 # TODO: add hints
-def _init_objects(frame, gridkw, labelkw, button, label, radiobutton):
-    if button:
-        class _Buttons(Buttons):
-            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                self.gridkw = gridkw
-                return super().__init__(frame)
-            def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
-                return super().add(text, command, self.gridkw, name, fullspan)
-        buttons = _Buttons(frame, gridkw)
-    else:
-        buttons = None
+def _init_objects(
+    frame: ttk.Frame,
+    gridkw: GridKw,
+    labelkw: LabelKw,
+    label: bool,
+    button: bool,
+    radiobutton: bool,
+) -> tuple:
     if label:
         class _Labels(Labels):
             def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
@@ -262,6 +259,16 @@ def _init_objects(frame, gridkw, labelkw, button, label, radiobutton):
         labels = _Labels(frame, gridkw)
     else:
         labels = None
+    if button:
+        class _Buttons(Buttons):
+            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                self.gridkw = gridkw
+                return super().__init__(frame)
+            def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
+                return super().add(text, command, self.gridkw, name, fullspan)
+        buttons = _Buttons(frame, gridkw)
+    else:
+        buttons = None
     if radiobutton:
         class _RadioButtons(RadioButtons):
             def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
@@ -272,11 +279,19 @@ def _init_objects(frame, gridkw, labelkw, button, label, radiobutton):
         radiobuttons = _RadioButtons(frame, gridkw)
     else:
         radiobuttons = None
-    return (buttons, labels, radiobuttons)
+    return (labels, buttons, radiobuttons)
 
 
 class RootWindow(Tk):
-    def __init__(self, maxcolumn: int = 4, padding: int = 20, **kwargs) -> None:
+    def __init__(
+        self,
+        maxcolumn: int = 4,
+        padding: int = 20,
+        label: bool = True,
+        button: bool = True,
+        radiobutton: bool = False,
+        **kwargs,
+    ) -> None:
         _ret = super().__init__(**kwargs)
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
@@ -286,7 +301,13 @@ class RootWindow(Tk):
 
         self.stringvars = StringVars([], defaltvalue="")
 
-        self.buttons, self.labels, _ = _init_objects(self.frame, self.gridkw, self.labelkw, True, True, False)
+        _l, _b, _r = _init_objects(self.frame, self.gridkw, self.labelkw, label, button, radiobutton)
+        if _l is not None:
+            self.labels = _l
+        if _b is not None:
+            self.buttons = _b
+        if _r is not None:
+            self.radiobuttons = _r
 
         return _ret
 
@@ -303,8 +324,8 @@ class SubWindow(Toplevel):
         maxcolumn: int = 1,
         sticky: str = W,
         fontsize: int = FONTSIZE,
-        button: bool = False,
         label: bool = False,
+        button: bool = False,
         radiobutton: bool = False,
     ) -> None:
         _ret = super().__init__()
@@ -320,7 +341,13 @@ class SubWindow(Toplevel):
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
-        self.buttons, self.labels, self.radiobuttons = _init_objects(self.frame, self.gridkw, self.labelkw, button, label, radiobutton)
+        _l, _b, _r = _init_objects(self.frame, self.gridkw, self.labelkw, label, button, radiobutton)
+        if _l is not None:
+            self.labels = _l
+        if _b is not None:
+            self.buttons = _b
+        if _r is not None:
+            self.radiobuttons = _r
 
         return _ret
 
