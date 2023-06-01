@@ -1,14 +1,10 @@
 import subprocess
 import webbrowser
-from typing import Dict
 from datetime import datetime
-from pathlib import Path
 from tkinter import (
     filedialog,
     messagebox,
-    Entry,
     StringVar,
-    END,
 )
 
 from .tktlib import (
@@ -137,12 +133,13 @@ def main(config: Config, args) -> None:
         )
         if len(export_file) == 0:
             return None
-        # try:
-        #     data.export(filepath=export_file)
-        # except Exception as e:
-        #     messagebox.showwarning("Export failed", e)
-        # else:
-        #     messagebox.showinfo("Export", f"Successfully saved.")
+        try:
+            # _save(export_file)
+            pass
+        except Exception as e:
+            messagebox.showwarning("Export failed", e)
+        else:
+            messagebox.showinfo("Export", f"Successfully saved.")
         return None
 
     def _about(event=None):
@@ -161,14 +158,11 @@ def main(config: Config, args) -> None:
         padding=20,
     )
     root.buttons.add("[O]pen", _open)
-    root.bind("o", _open)
     root.lf()
 
-    # labels.add("Result", fullspan=True)
     root.buttons.add("Export", _export)
     root.lf()
 
-    # labels.add("----", scale="big", fullspan=True)
     root.stringvars.add("test01")
     root.buttons.add("Test01", _test01)
     root.labels.add(root.stringvars.get_instance("test01"))
@@ -188,12 +182,12 @@ def main(config: Config, args) -> None:
 
     root.buttons.add("About", _about)
     root.buttons.add("Config", _config)
-    # buttons.add("Reload[F5]", _reload)
+    root.buttons.add("Reload[F5]", _do_nothing)
     root.buttons.add("Quit[Esc]", root.close)
     root.lf()
 
     # keybind
-    
+    root.bind("o", _open)
     root.bind("<F1>", _about)
     root.bind("<F5>", _do_nothing)
     root.bind("<Escape>", root.close)
