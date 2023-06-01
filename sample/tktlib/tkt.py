@@ -231,14 +231,14 @@ class RadioButtons(GridObject):
 class RootWindow(Tk):
     def __init__(self, maxcolumn: int = 4, padding: int = 20, **kwargs) -> None:
         _ret = super().__init__(**kwargs)
-        self.frm = ttk.Frame(self, padding=padding)
-        self.frm.grid()
+        self.frame = ttk.Frame(self, padding=padding)
+        self.frame.grid()
 
         self.gridkw = GridKw(maxcolumn=maxcolumn)
         self.labelkw = LabelKw()
 
-        self.buttons = Buttons(self.frm)
-        self.labels = Labels(self.frm)
+        self.buttons = Buttons(self.frame)
+        self.labels = Labels(self.frame)
         self.stringvars = StringVars([], defaltvalue="")
 
         return _ret
@@ -266,18 +266,18 @@ class SubWindow(Toplevel):
         self.grab_set()
         self.focus_set()
 
-        self.frm = ttk.Frame(self, padding=padding)
-        self.frm.grid()
+        self.frame = ttk.Frame(self, padding=padding)
+        self.frame.grid()
 
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
         if button:
-            self.buttons = Buttons(self.frm)
+            self.buttons = Buttons(self.frame)
         if label:
-            self.labels = Labels(self.frm)
+            self.labels = Labels(self.frame)
         if radiobutton:
-            self.radiobuttons = RadioButtons(self.frm)
+            self.radiobuttons = RadioButtons(self.frame)
 
         return _ret
 

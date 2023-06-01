@@ -60,7 +60,7 @@ def main(config: Config, args) -> None:
 
             for k, v in config.to_dict().items():
                 self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", self.labelkw, self.gridkw, name=k)
-                self.entries.add(k, master=self.frm, width=entry_width)
+                self.entries.add(k, master=self.frame, width=entry_width)
                 self.entries.set(k, str(v))
                 self.entries.get_instance(k).grid(**self.gridkw.pull())
                 # if type(config.default[k]).__name__ in ["Path"]:
@@ -68,8 +68,8 @@ def main(config: Config, args) -> None:
                 if k == "workdir":
                     self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), self.gridkw, name=f"workdir_btn")
 
-            self.buttons.add("Save[Enter]", self.save, self.gridkw, name="save")
-            self.buttons.add("Cancel[ESC]", self.close, self.gridkw, name="cancel")
+            self.buttons.add("Save[Enter]", self.save, self.gridkw)
+            self.buttons.add("Cancel[ESC]", self.close, self.gridkw)
             self.bind("<Return>", self.save)
             self.bind("<Escape>", self.close)
 
@@ -84,26 +84,19 @@ def main(config: Config, args) -> None:
                     config[k] = v
 
             if not _changed:
-                self.close()
                 messagebox.showinfo("Config", "Nothing changed.")
-            elif messagebox.askyesno("Save config", f"Save to configfile and reload datafile?"):
-                config.save(
-                    section=args.config_section,
-                    mode="overwrite",
-                )
-
-                # reload
-                config.cast()
                 self.close()
-                # _reload(config=config)
+            elif messagebox.askyesno("Save config", f"Save to configfile and reload datafile?"):
+                config.save(section=args.config_section, mode="overwrite")
+                config.cast()
                 messagebox.showinfo("Config", "Saved.")
+                self.close()
             return None
 
     class TestWindow01(SubWindow):
         def __init__(self) -> None:
             _ret = super().__init__(title="Config", fontsize=10, button=True, radiobutton=True)
 
-            # ????
             self.var = StringVar()
 
             self.radiobuttons.add("A A A", "A123", self.var, self.gridkw)
@@ -165,6 +158,7 @@ def main(config: Config, args) -> None:
     root.title(APPNAME_FULL)
     root.resizable(False, False)
     root.buttons.add("[O]pen", _open, root.gridkw, name="open")
+    root.bind("o", _open)
     root.gridkw.lf()
 
     # labels.add("Result", labelkw.big, gridkw, name="title.r", fullspan=True)
@@ -189,13 +183,14 @@ def main(config: Config, args) -> None:
     root.buttons.add("dummyBtn7", _do_nothing, root.gridkw)
     root.gridkw.lf()
 
-    root.buttons.add("Config", _config, root.gridkw, name="config")
+    root.buttons.add("About", _about, root.gridkw)
+    root.buttons.add("Config", _config, root.gridkw)
     # buttons.add("Reload[F5]", _reload, gridkw, name="reload")
-    root.buttons.add("Quit[Esc]", root.close, root.gridkw, name="quit")
+    root.buttons.add("Quit[Esc]", root.close, root.gridkw)
     root.gridkw.lf()
 
     # keybind
-    root.bind("o", _open)
+    
     root.bind("<F1>", _about)
     root.bind("<F5>", _do_nothing)
     root.bind("<Escape>", root.close)
