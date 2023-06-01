@@ -293,6 +293,7 @@ class RootWindow(Tk):
         **kwargs,
     ) -> None:
         _ret = super().__init__(**kwargs)
+
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
 
@@ -301,32 +302,34 @@ class RootWindow(Tk):
 
         self.stringvars = StringVars([], defaltvalue="")
 
-        _l, _b, _r = _init_objects(self.frame, self.gridkw, self.labelkw, label, button, radiobutton)
-        if _l is not None:
-            self.labels = _l
-        if _b is not None:
-            self.buttons = _b
-        if _r is not None:
-            self.radiobuttons = _r
+        self.labels, self.buttons, self.radiobuttons = _init_objects(
+            frame=self.frame,
+            gridkw=self.gridkw,
+            labelkw=self.labelkw,
+            label=label,
+            button=button,
+            radiobutton=radiobutton,
+        )
 
         return _ret
 
-    def close(self, event=None):
+    def close(self, event=None) -> None:
         self.destroy()
+        return None
 
 
 class SubWindow(Toplevel):
     def __init__(
         self,
-        title: str,
+        title: str = "",
         resizable: bool = False,
         padding: int = 20,
         maxcolumn: int = 1,
         sticky: str = W,
         fontsize: int = FONTSIZE,
-        label: bool = False,
-        button: bool = False,
-        radiobutton: bool = False,
+        label: bool = True,
+        button: bool = True,
+        radiobutton: bool = True,
     ) -> None:
         _ret = super().__init__()
 
@@ -341,13 +344,14 @@ class SubWindow(Toplevel):
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
-        _l, _b, _r = _init_objects(self.frame, self.gridkw, self.labelkw, label, button, radiobutton)
-        if _l is not None:
-            self.labels = _l
-        if _b is not None:
-            self.buttons = _b
-        if _r is not None:
-            self.radiobuttons = _r
+        self.labels, self.buttons, self.radiobuttons = _init_objects(
+            frame=self.frame,
+            gridkw=self.gridkw,
+            labelkw=self.labelkw,
+            label=label,
+            button=button,
+            radiobutton=radiobutton,
+        )
 
         return _ret
 
