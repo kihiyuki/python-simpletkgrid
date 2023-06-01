@@ -3,7 +3,7 @@
 # Released under the MIT license
 # Supported Python versions: 3.8
 # Requires: (using only Python Standard Library)
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union, Dict, Any, Tuple
 from pathlib import Path
 from tkinter import (
     Tk,
@@ -233,7 +233,6 @@ class RadioButtons(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
-# TODO: add hints
 def _init_objects(
     frame: ttk.Frame,
     gridkw: GridKw,
@@ -285,6 +284,8 @@ def _init_objects(
 class RootWindow(Tk):
     def __init__(
         self,
+        title: str = "",
+        resizable: Union[bool, Tuple[bool]] = (False, False),
         maxcolumn: int = 4,
         padding: int = 20,
         label: bool = True,
@@ -294,12 +295,14 @@ class RootWindow(Tk):
     ) -> None:
         _ret = super().__init__(**kwargs)
 
+        self.title(title)
+        if type(resizable) is bool:
+            resizable = (resizable, resizable)
+        self.resizable(resizable)
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
-
         self.gridkw = GridKw(maxcolumn=maxcolumn)
         self.labelkw = LabelKw()
-
         self.stringvars = StringVars([], defaltvalue="")
 
         self.labels, self.buttons, self.radiobuttons = _init_objects(
@@ -310,7 +313,6 @@ class RootWindow(Tk):
             button=button,
             radiobutton=radiobutton,
         )
-
         return _ret
 
     def close(self, event=None) -> None:
@@ -322,7 +324,7 @@ class SubWindow(Toplevel):
     def __init__(
         self,
         title: str = "",
-        resizable: bool = False,
+        resizable: Union[bool, Tuple[bool]] = (False, False),
         padding: int = 20,
         maxcolumn: int = 1,
         sticky: str = W,
@@ -330,17 +332,18 @@ class SubWindow(Toplevel):
         label: bool = True,
         button: bool = True,
         radiobutton: bool = True,
+        **kwargs,
     ) -> None:
-        _ret = super().__init__()
+        _ret = super().__init__(**kwargs)
 
         self.title(title)
+        if type(resizable) is bool:
+            resizable = (resizable, resizable)
         self.resizable(resizable, resizable)
         self.grab_set()
         self.focus_set()
-
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
-
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
@@ -352,7 +355,6 @@ class SubWindow(Toplevel):
             button=button,
             radiobutton=radiobutton,
         )
-
         return _ret
 
     def close(self, event=None) -> None:

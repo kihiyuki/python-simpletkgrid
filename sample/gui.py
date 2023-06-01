@@ -154,9 +154,12 @@ def main(config: Config, args) -> None:
     def _test01(event=None):
         return TestWindow01()
 
-    root = RootWindow(maxcolumn=4, padding=20)
-    root.title(APPNAME_FULL)
-    root.resizable(False, False)
+    root = RootWindow(
+        title=APPNAME_FULL,
+        resizable=False,
+        maxcolumn=4,
+        padding=20,
+    )
     root.buttons.add("[O]pen", _open)
     root.bind("o", _open)
     root.gridkw.lf()
