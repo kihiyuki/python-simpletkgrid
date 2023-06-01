@@ -327,6 +327,9 @@ class RootWindow(Tk):
         )
         return _ret
 
+    def lf(self) -> None:
+        return self.gridkw.lf()
+
     def close(self, event=None) -> None:
         self.destroy()
         return None

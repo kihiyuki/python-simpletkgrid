@@ -162,17 +162,17 @@ def main(config: Config, args) -> None:
     )
     root.buttons.add("[O]pen", _open)
     root.bind("o", _open)
-    root.gridkw.lf()
+    root.lf()
 
     # labels.add("Result", fullspan=True)
     root.buttons.add("Export", _export)
-    root.gridkw.lf()
+    root.lf()
 
     # labels.add("----", scale="big", fullspan=True)
     root.stringvars.add("test01")
     root.buttons.add("Test01", _test01)
     root.labels.add(root.stringvars.get_instance("test01"))
-    root.gridkw.lf()
+    root.lf()
 
     root.labels.add("Big Text", scale="big", fullspan=True)
     root.labels.add("Medium Text", fullspan=True)
@@ -184,13 +184,13 @@ def main(config: Config, args) -> None:
     root.buttons.add("dummyBtn5", _do_nothing)
     root.buttons.add("dummyBtn6", _do_nothing)
     root.buttons.add("dummyBtn7", _do_nothing)
-    root.gridkw.lf()
+    root.lf()
 
     root.buttons.add("About", _about)
     root.buttons.add("Config", _config)
     # buttons.add("Reload[F5]", _reload)
     root.buttons.add("Quit[Esc]", root.close)
-    root.gridkw.lf()
+    root.lf()
 
     # keybind
     
