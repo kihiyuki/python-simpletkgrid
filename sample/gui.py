@@ -125,6 +125,9 @@ def main(config: Config, args) -> None:
                 messagebox.showwarning("Warning", f"Please select.")
             return None
 
+    def _do_nothing(event=None) -> None:
+        return None
+
     def _open(event=None) -> None:
         subprocess.Popen(["explorer",  config["workdir"]], shell=True)
         return None
@@ -174,7 +177,18 @@ def main(config: Config, args) -> None:
     root.labels.add(root.stringvars.get_instance("test01"), root.labelkw, root.gridkw, name="test01.v")
     root.gridkw.lf()
 
-    # labels.add("----", labelkw.big, gridkw, name="title.t", fullspan=True)
+    root.labels.add("Big Text", root.labelkw.big, root.gridkw, fullspan=True)
+    root.labels.add("Medium Text", root.labelkw, root.gridkw, fullspan=True)
+    root.labels.add("Small Text", root.labelkw.small, root.gridkw, fullspan=True)
+    root.buttons.add("dummyBtn1", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn2", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn3", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn4", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn5", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn6", _do_nothing, root.gridkw)
+    root.buttons.add("dummyBtn7", _do_nothing, root.gridkw)
+    root.gridkw.lf()
+
     root.buttons.add("Config", _config, root.gridkw, name="config")
     # buttons.add("Reload[F5]", _reload, gridkw, name="reload")
     root.buttons.add("Quit[Esc]", root.close, root.gridkw, name="quit")
@@ -183,7 +197,7 @@ def main(config: Config, args) -> None:
     # keybind
     root.bind("o", _open)
     root.bind("<F1>", _about)
-    # root.bind("<F5>", _reload)
+    root.bind("<F5>", _do_nothing)
     root.bind("<Escape>", root.close)
 
     root.mainloop()
