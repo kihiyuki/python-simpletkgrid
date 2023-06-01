@@ -59,14 +59,14 @@ def main(config: Config, args) -> None:
                 return None
 
             for k, v in config.to_dict().items():
-                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", name=k)
+                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}")
                 self.entries.add(k, master=self.frame, width=entry_width)
                 self.entries.set(k, str(v))
                 self.entries.get_instance(k).grid(**self.gridkw.pull())
                 # if type(config.default[k]).__name__ in ["Path"]:
-                #     self.buttons.add("Browse", lambda: _diag(k, "file"), self.gridkw, name=f"{k}_diag_btn")
+                #     self.buttons.add("Browse", lambda: _diag(k, "file"))
                 if k == "workdir":
-                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), name=f"workdir_btn")
+                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"))
 
             self.buttons.add("Save[Enter]", self.save)
             self.buttons.add("Cancel[ESC]", self.close)
@@ -99,12 +99,12 @@ def main(config: Config, args) -> None:
 
             self.var = StringVar()
 
-            self.radiobuttons.add("A A A", "A123", self.var, self.gridkw)
-            self.radiobuttons.add("BBBBB", "B123", self.var, self.gridkw)
-            self.radiobuttons.add("CCC C", "C123", self.var, self.gridkw)
+            self.radiobuttons.add("A A A", "A123", self.var)
+            self.radiobuttons.add("BBBBB", "B123", self.var)
+            self.radiobuttons.add("CCC C", "C123", self.var)
 
-            self.buttons.add("Update[Enter]", self.update, self.gridkw)
-            self.buttons.add("Cancel[ESC]", self.close, self.gridkw)
+            self.buttons.add("Update[Enter]", self.update)
+            self.buttons.add("Cancel[ESC]", self.close)
             self.bind("<Return>", self.update)
             self.bind("<Escape>", self.close)
             return _ret
@@ -157,36 +157,36 @@ def main(config: Config, args) -> None:
     root = RootWindow(maxcolumn=4, padding=20)
     root.title(APPNAME_FULL)
     root.resizable(False, False)
-    root.buttons.add("[O]pen", _open, root.gridkw)
+    root.buttons.add("[O]pen", _open)
     root.bind("o", _open)
     root.gridkw.lf()
 
-    # labels.add("Result", labelkw.big, gridkw, name="title.r", fullspan=True)
-    root.buttons.add("Export", _export, root.gridkw, name="export")
+    # labels.add("Result", fullspan=True)
+    root.buttons.add("Export", _export)
     root.gridkw.lf()
 
-    # labels.add("----", labelkw.big, gridkw, name="title.t2", fullspan=True)
+    # labels.add("----", scale="big", fullspan=True)
     root.stringvars.add("test01")
-    root.buttons.add("Test01", _test01, root.gridkw, name="test01")
-    root.labels.add(root.stringvars.get_instance("test01"), root.labelkw, root.gridkw, name="test01.v")
+    root.buttons.add("Test01", _test01)
+    root.labels.add(root.stringvars.get_instance("test01"))
     root.gridkw.lf()
 
-    root.labels.add("Big Text", root.labelkw.big, root.gridkw, fullspan=True)
-    root.labels.add("Medium Text", root.labelkw, root.gridkw, fullspan=True)
-    root.labels.add("Small Text", root.labelkw.small, root.gridkw, fullspan=True)
-    root.buttons.add("dummyBtn1", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn2", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn3", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn4", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn5", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn6", _do_nothing, root.gridkw)
-    root.buttons.add("dummyBtn7", _do_nothing, root.gridkw)
+    root.labels.add("Big Text", scale="big", fullspan=True)
+    root.labels.add("Medium Text", fullspan=True)
+    root.labels.add("Small Text", scale="small", fullspan=True)
+    root.buttons.add("dummyBtn1", _do_nothing)
+    root.buttons.add("dummyBtn2", _do_nothing)
+    root.buttons.add("dummyBtn3", _do_nothing)
+    root.buttons.add("dummyBtn4", _do_nothing)
+    root.buttons.add("dummyBtn5", _do_nothing)
+    root.buttons.add("dummyBtn6", _do_nothing)
+    root.buttons.add("dummyBtn7", _do_nothing)
     root.gridkw.lf()
 
-    root.buttons.add("About", _about, root.gridkw)
-    root.buttons.add("Config", _config, root.gridkw)
-    # buttons.add("Reload[F5]", _reload, gridkw, name="reload")
-    root.buttons.add("Quit[Esc]", root.close, root.gridkw)
+    root.buttons.add("About", _about)
+    root.buttons.add("Config", _config)
+    # buttons.add("Reload[F5]", _reload)
+    root.buttons.add("Quit[Esc]", root.close)
     root.gridkw.lf()
 
     # keybind

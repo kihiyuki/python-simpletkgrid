@@ -233,6 +233,48 @@ class RadioButtons(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
+# TODO: add hints
+def _init_objects(frame, gridkw, labelkw, button, label, radiobutton):
+    if button:
+        class _Buttons(Buttons):
+            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                self.gridkw = gridkw
+                return super().__init__(frame)
+            def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
+                return super().add(text, command, self.gridkw, name, fullspan)
+        buttons = _Buttons(frame, gridkw)
+    else:
+        buttons = None
+    if label:
+        class _Labels(Labels):
+            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                self.gridkw = gridkw
+                return super().__init__(frame)
+            def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: LabelKw = labelkw, name: Optional[str] = None, fullspan: bool = False) -> None:
+                if type(scale) is str:
+                    if scale == "big":
+                        labelkw = labelkw.big
+                    elif scale == "small":
+                        labelkw = labelkw.small
+                else:
+                    labelkw = labelkw.specify_scale(scale)
+                return super().add(text, labelkw, self.gridkw, name, fullspan)
+        labels = _Labels(frame, gridkw)
+    else:
+        labels = None
+    if radiobutton:
+        class _RadioButtons(RadioButtons):
+            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+                self.gridkw = gridkw
+                return super().__init__(frame)
+            def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
+                return super().add(text, value, variable, self.gridkw, name, fullspan)
+        radiobuttons = _RadioButtons(frame, gridkw)
+    else:
+        radiobuttons = None
+    return (buttons, labels, radiobuttons)
+
+
 class RootWindow(Tk):
     def __init__(self, maxcolumn: int = 4, padding: int = 20, **kwargs) -> None:
         _ret = super().__init__(**kwargs)
@@ -242,14 +284,15 @@ class RootWindow(Tk):
         self.gridkw = GridKw(maxcolumn=maxcolumn)
         self.labelkw = LabelKw()
 
-        self.buttons = Buttons(self.frame)
-        self.labels = Labels(self.frame)
         self.stringvars = StringVars([], defaltvalue="")
+
+        self.buttons, self.labels, _ = _init_objects(self.frame, self.gridkw, self.labelkw, True, True, False)
 
         return _ret
 
     def close(self, event=None):
         self.destroy()
+
 
 class SubWindow(Toplevel):
     def __init__(
@@ -277,37 +320,7 @@ class SubWindow(Toplevel):
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
-        if button:
-            class _Buttons(Buttons):
-                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                    self._gridkw = gridkw
-                    return super().__init__(frame)
-                def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
-                    return super().add(text, command, self._gridkw, name, fullspan)
-            self.buttons = _Buttons(self.frame, self.gridkw)
-        if label:
-            class _Labels(Labels):
-                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                    self._gridkw = gridkw
-                    return super().__init__(frame)
-                def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: LabelKw = self.labelkw, name: Optional[str] = None, fullspan: bool = False) -> None:
-                    if type(scale) is str:
-                        if scale == "big":
-                            labelkw = labelkw.big
-                        elif scale == "small":
-                            labelkw = labelkw.small
-                    else:
-                        labelkw = labelkw.specify_scale(scale)
-                    return super().add(text, labelkw, self._gridkw, name, fullspan)
-            self.labels = _Labels(self.frame, self.gridkw)
-        if radiobutton:
-            class _RadioButtons(RadioButtons):
-                def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                    self._gridkw = gridkw
-                    return super().__init__(frame)
-                def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
-                    return super().add(text, value, variable, self._gridkw, name, fullspan)
-            self.radiobuttons = _RadioButtons(self.frame, self.gridkw)
+        self.buttons, self.labels, self.radiobuttons = _init_objects(self.frame, self.gridkw, self.labelkw, button, label, radiobutton)
 
         return _ret
 
