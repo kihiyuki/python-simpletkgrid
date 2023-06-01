@@ -153,13 +153,13 @@ def main(config: Config, args) -> None:
         return None
 
     def _about(event=None):
-        aw = AboutWindow()
+        return AboutWindow()
 
     def _config(event=None):
-        cw = ConfigWindow()
+        return ConfigWindow()
 
     def _test01(event=None):
-        tw01 = TestWindow01()
+        return TestWindow01()
 
     root = RootWindow(maxcolumn=4, padding=20)
     root.title(APPNAME_FULL)
