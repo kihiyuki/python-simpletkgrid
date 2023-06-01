@@ -25,7 +25,13 @@ class LabelKw(dict):
         )
 
     @property
-    def big(self, ratio: float = 1.5):
+    def big(self, ratio: float = 1.5) -> dict:
+        _d = self.copy()
+        _d["font"] = ("", int(_d["font"][1] * ratio))
+        return _d
+
+    @property
+    def small(self, ratio: float = 0.6666667) -> dict:
         _d = self.copy()
         _d["font"] = ("", int(_d["font"][1] * ratio))
         return _d
