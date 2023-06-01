@@ -15,6 +15,7 @@ from .tktlib import (
     Config,
     RootWindow,
     SubWindow,
+    Entries,
     dialog,
 )
 from .define import (
@@ -46,29 +47,26 @@ def main(config: Config, args) -> None:
         def __init__(self, entry_width: int = 80) -> None:
             _ret = super().__init__(title="Config", fontsize=10, button=True, label=True)
 
-            self.entries: Dict[str, Entry] = dict()
+            self.entries = Entries()
 
-            def _diag(
+            def _filediag(
                 k: str,
-                type_: str = "file",
+                mode: str = "f",
             ) -> None:
-                _path = dialog.askopenpath(self.entries[k].get(), mode="f")
-                print("path", _path)
+                _path = dialog.askopenpath(self.entries.get(k), mode=mode)
                 if _path is not None:
-                    # Entry.set
-                    self.entries[k].delete(0, END)
-                    self.entries[k].insert(END, _path)
+                    self.entries.set(k, _path)
                 return None
 
             for k, v in config.to_dict().items():
                 self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", self.labelkw, self.gridkw, name=k)
-                self.entries[k] = Entry(self.frm, width=entry_width)
-                self.entries[k].insert(END, str(v))
-                self.entries[k].grid(**self.gridkw.pull())
+                self.entries.add(k, master=self.frm, width=entry_width)
+                self.entries.set(k, str(v))
+                self.entries.get_instance(k).grid(**self.gridkw.pull())
                 # if type(config.default[k]).__name__ in ["Path"]:
                 #     self.buttons.add("Browse", lambda: _diag(k, "file"), self.gridkw, name=f"{k}_diag_btn")
                 if k == "workdir":
-                    self.buttons.add("Browse", lambda: _diag("workdir", "dir"), self.gridkw, name=f"workdir_btn")
+                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), self.gridkw, name=f"workdir_btn")
 
             self.buttons.add("Save[Enter]", self.save, self.gridkw, name="save")
             self.buttons.add("Cancel[ESC]", self.close, self.gridkw, name="cancel")
@@ -173,7 +171,7 @@ def main(config: Config, args) -> None:
     # labels.add("----", labelkw.big, gridkw, name="title.t2", fullspan=True)
     root.stringvars.add("test01")
     root.buttons.add("Test01", _test01, root.gridkw, name="test01")
-    root.labels.add(root.stringvars.get("test01"), root.labelkw, root.gridkw, name="test01.v")
+    root.labels.add(root.stringvars.get_instance("test01"), root.labelkw, root.gridkw, name="test01.v")
     root.gridkw.lf()
 
     # labels.add("----", labelkw.big, gridkw, name="title.t", fullspan=True)

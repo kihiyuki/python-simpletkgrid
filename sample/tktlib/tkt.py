@@ -11,8 +11,10 @@ from tkinter import (
     Toplevel,
     Variable,
     StringVar,
+    Entry,
     filedialog,
     W,
+    END,
 )
 
 
@@ -76,18 +78,26 @@ class GridKw(object):
         )
 
 
-class StringVars(object):
-    def __init__(self, keys: Union[list, tuple, set], defaltvalue: Optional[str] = None) -> None:
-        self._data: Dict[Any, StringVar] = dict()
+class _DictLikeObjects(object):
+    def __init__(
+        self,
+        datatype,
+        keys: Union[list, tuple, set, None] = None,
+        defaltvalue: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        self._datatype = datatype
+        self._data: Dict[Any, self._datatype] = {}
         self._defaultvalue: Optional[str] = defaltvalue
-        for k in keys:
-            self.add(k)
+        if keys is not None:
+            for k in keys:
+                self.add(k, **kwargs)
         return None
 
-    def add(self, key: Any, defaltvalue: Optional[str] = None) -> None:
+    def add(self, key: Any, defaltvalue: Optional[str] = None, **kwargs) -> None:
         if key in self._data.keys():
             raise KeyError(f"Key '{key}' already exists")
-        self._data[key] = StringVar()
+        self._data[key] = self._datatype(**kwargs)
         if defaltvalue is None:
             defaltvalue = self._defaultvalue
         if defaltvalue is None:
@@ -96,8 +106,11 @@ class StringVars(object):
             self._data[key].set(defaltvalue)
         return None
 
-    def get(self, key: Any) -> str:
+    def get_instance(self, key: Any):
         return self._data[key]
+
+    def get(self, key: Any) -> str:
+        return self._data[key].get()
 
     def set(self, key: Any, value: str) -> None:
         return self._data[key].set(value)
@@ -107,6 +120,37 @@ class StringVars(object):
 
     def __setitem__(self, key: Any, value: str):
         return self.set(key=key, value=value)
+
+    def items(self):
+        return self._data.items()
+
+class StringVars(_DictLikeObjects):
+    def __init__(
+        self,
+        keys: Union[list, tuple, set, None] = None,
+        defaltvalue: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        self._data: Dict[Any, StringVar]
+        return super().__init__(StringVar, keys=keys, defaltvalue=defaltvalue, **kwargs)
+
+
+class SettableEntry(Entry):
+    def set(self, value: str) -> None:
+        self.delete(0, END)
+        self.insert(END, value)
+        return None
+
+
+class Entries(_DictLikeObjects):
+    def __init__(
+        self,
+        keys: Union[list, tuple, set, None] = None,
+        defaltvalue: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        self._data: Dict[Any, SettableEntry]
+        return super().__init__(SettableEntry, keys=keys, defaltvalue=defaltvalue, **kwargs)
 
 
 class GridObject(object):
