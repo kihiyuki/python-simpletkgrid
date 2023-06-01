@@ -233,6 +233,40 @@ class RadioButtons(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
+class EmbedLabels(Labels):
+    def __init__(self, frame: ttk.Frame, gridkw: GridKw, labelkw: LabelKw) -> None:
+        self._gridkw = gridkw
+        self._labelkw = labelkw
+        return super().__init__(frame)
+    def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: Optional[LabelKw] = None, name: Optional[str] = None, fullspan: bool = False) -> None:
+        if labelkw is None:
+            labelkw = self._labelkw
+        if type(scale) is str:
+            if scale == "big":
+                labelkw = labelkw.big
+            elif scale == "small":
+                labelkw = labelkw.small
+        else:
+            labelkw = labelkw.specify_scale(scale)
+        return super().add(text, labelkw, self._gridkw, name, fullspan)
+
+
+class EmbedButtons(Buttons):
+    def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+        self._gridkw = gridkw
+        return super().__init__(frame)
+    def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
+        return super().add(text, command, self._gridkw, name, fullspan)
+
+
+class EmbedRadioButtons(RadioButtons):
+    def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
+        self._gridkw = gridkw
+        return super().__init__(frame)
+    def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
+        return super().add(text, value, variable, self._gridkw, name, fullspan)
+
+
 def _init_objects(
     frame: ttk.Frame,
     gridkw: GridKw,
@@ -242,40 +276,15 @@ def _init_objects(
     radiobutton: bool,
 ) -> tuple:
     if label:
-        class _Labels(Labels):
-            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                self.gridkw = gridkw
-                return super().__init__(frame)
-            def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: LabelKw = labelkw, name: Optional[str] = None, fullspan: bool = False) -> None:
-                if type(scale) is str:
-                    if scale == "big":
-                        labelkw = labelkw.big
-                    elif scale == "small":
-                        labelkw = labelkw.small
-                else:
-                    labelkw = labelkw.specify_scale(scale)
-                return super().add(text, labelkw, self.gridkw, name, fullspan)
-        labels = _Labels(frame, gridkw)
+        labels = EmbedLabels(frame, gridkw, labelkw)
     else:
         labels = None
     if button:
-        class _Buttons(Buttons):
-            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                self.gridkw = gridkw
-                return super().__init__(frame)
-            def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
-                return super().add(text, command, self.gridkw, name, fullspan)
-        buttons = _Buttons(frame, gridkw)
+        buttons = EmbedButtons(frame, gridkw)
     else:
         buttons = None
     if radiobutton:
-        class _RadioButtons(RadioButtons):
-            def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
-                self.gridkw = gridkw
-                return super().__init__(frame)
-            def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
-                return super().add(text, value, variable, self.gridkw, name, fullspan)
-        radiobuttons = _RadioButtons(frame, gridkw)
+        radiobuttons = EmbedRadioButtons(frame, gridkw)
     else:
         radiobuttons = None
     return (labels, buttons, radiobuttons)
@@ -298,13 +307,16 @@ class RootWindow(Tk):
         self.title(title)
         if type(resizable) is bool:
             resizable = (resizable, resizable)
-        self.resizable(resizable)
+        self.resizable(*resizable)
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
         self.gridkw = GridKw(maxcolumn=maxcolumn)
         self.labelkw = LabelKw()
         self.stringvars = StringVars([], defaltvalue="")
 
+        self.labels: EmbedLabels
+        self.buttons: EmbedButtons
+        self.radiobuttons: EmbedRadioButtons
         self.labels, self.buttons, self.radiobuttons = _init_objects(
             frame=self.frame,
             gridkw=self.gridkw,
@@ -339,7 +351,7 @@ class SubWindow(Toplevel):
         self.title(title)
         if type(resizable) is bool:
             resizable = (resizable, resizable)
-        self.resizable(resizable, resizable)
+        self.resizable(*resizable)
         self.grab_set()
         self.focus_set()
         self.frame = ttk.Frame(self, padding=padding)
@@ -347,6 +359,9 @@ class SubWindow(Toplevel):
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
+        self.labels: EmbedLabels
+        self.buttons: EmbedButtons
+        self.radiobuttons: EmbedRadioButtons
         self.labels, self.buttons, self.radiobuttons = _init_objects(
             frame=self.frame,
             gridkw=self.gridkw,
