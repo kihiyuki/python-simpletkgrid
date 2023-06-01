@@ -163,7 +163,7 @@ class Entries(_DictLikeObjects):
         return super().__init__(SettableEntry, keys=keys, defaltvalue=defaltvalue, **kwargs)
 
 
-class GridObject(object):
+class BaseGridObject(object):
     def __init__(self, frame: ttk.Frame) -> None:
         self._data: Dict[str, ttk.Widget] = dict()
         self.frame: ttk.Frame = frame
@@ -190,7 +190,7 @@ class GridObject(object):
         return self._data[name].grid(**gridkw.pull(fullspan=fullspan))
 
 
-class Labels(GridObject):
+class BaseLabels(BaseGridObject):
     def add(
         self,
         text: Any,
@@ -206,7 +206,7 @@ class Labels(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
-class Buttons(GridObject):
+class BaseButtons(BaseGridObject):
     def add(
         self,
         text: str,
@@ -219,7 +219,7 @@ class Buttons(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
-class RadioButtons(GridObject):
+class BaseRadioButtons(BaseGridObject):
     def add(
             self,
             text: str,
@@ -233,7 +233,7 @@ class RadioButtons(GridObject):
         return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
 
 
-class EmbedLabels(Labels):
+class Labels(BaseLabels):
     def __init__(self, frame: ttk.Frame, gridkw: GridKw, labelkw: LabelKw) -> None:
         self._gridkw = gridkw
         self._labelkw = labelkw
@@ -251,7 +251,7 @@ class EmbedLabels(Labels):
         return super().add(text, labelkw, self._gridkw, name, fullspan)
 
 
-class EmbedButtons(Buttons):
+class Buttons(BaseButtons):
     def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
         self._gridkw = gridkw
         return super().__init__(frame)
@@ -259,7 +259,7 @@ class EmbedButtons(Buttons):
         return super().add(text, command, self._gridkw, name, fullspan)
 
 
-class EmbedRadioButtons(RadioButtons):
+class RadioButtons(BaseRadioButtons):
     def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
         self._gridkw = gridkw
         return super().__init__(frame)
@@ -267,7 +267,7 @@ class EmbedRadioButtons(RadioButtons):
         return super().add(text, value, variable, self._gridkw, name, fullspan)
 
 
-def _init_objects(
+def _init_gridobjects(
     frame: ttk.Frame,
     gridkw: GridKw,
     labelkw: LabelKw,
@@ -276,15 +276,15 @@ def _init_objects(
     radiobutton: bool,
 ) -> tuple:
     if label:
-        labels = EmbedLabels(frame, gridkw, labelkw)
+        labels = Labels(frame, gridkw, labelkw)
     else:
         labels = None
     if button:
-        buttons = EmbedButtons(frame, gridkw)
+        buttons = Buttons(frame, gridkw)
     else:
         buttons = None
     if radiobutton:
-        radiobuttons = EmbedRadioButtons(frame, gridkw)
+        radiobuttons = RadioButtons(frame, gridkw)
     else:
         radiobuttons = None
     return (labels, buttons, radiobuttons)
@@ -314,10 +314,10 @@ class RootWindow(Tk):
         self.labelkw = LabelKw()
         self.stringvars = StringVars([], defaltvalue="")
 
-        self.labels: EmbedLabels
-        self.buttons: EmbedButtons
-        self.radiobuttons: EmbedRadioButtons
-        self.labels, self.buttons, self.radiobuttons = _init_objects(
+        self.labels: Labels
+        self.buttons: Buttons
+        self.radiobuttons: RadioButtons
+        self.labels, self.buttons, self.radiobuttons = _init_gridobjects(
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
@@ -359,10 +359,10 @@ class SubWindow(Toplevel):
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
 
-        self.labels: EmbedLabels
-        self.buttons: EmbedButtons
-        self.radiobuttons: EmbedRadioButtons
-        self.labels, self.buttons, self.radiobuttons = _init_objects(
+        self.labels: Labels
+        self.buttons: Buttons
+        self.radiobuttons: RadioButtons
+        self.labels, self.buttons, self.radiobuttons = _init_gridobjects(
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
