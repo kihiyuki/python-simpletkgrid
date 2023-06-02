@@ -30,7 +30,7 @@ def main(config: Config, args) -> None:
             self.labels.add(f"Website: {URL}")
             self.buttons.add("Open Website", self.open_url)
             self.buttons.add("Close[ESC]", self.close)
-            self.bind("<Escape>", root.close)
+            self.bind("<Escape>", self.close)
             return _ret
 
         def open_url(event=None) -> None:
@@ -87,12 +87,10 @@ def main(config: Config, args) -> None:
     class TestWindow01(SubWindow):
         def __init__(self) -> None:
             _ret = super().__init__(title="Config", fontsize=10, button=True, radiobutton=True)
-
-            self.var = StringVar()
-
-            self.radiobuttons.add("A A A", "A123", self.var)
-            self.radiobuttons.add("BBBBB", "B123", self.var)
-            self.radiobuttons.add("CCC C", "C123", self.var)
+            self.stringvars.add("key1", defaultvalue="")
+            self.radiobuttons.add("A A A", "A123", self.stringvars["key1"])
+            self.radiobuttons.add("BBBBB", "B123", self.stringvars["key1"])
+            self.radiobuttons.add("CCC C", "C123", self.stringvars["key1"])
 
             self.buttons.add("Update[Enter]", self.update)
             self.buttons.add("Cancel[ESC]", self.close)
@@ -101,7 +99,7 @@ def main(config: Config, args) -> None:
             return _ret
 
         def update(self, event=None) -> None:
-            val = self.var.get()
+            val = self.stringvars.get("key1")
             if len(val) > 0:
                 root.stringvars.set("test01", val)
                 self.close()
@@ -151,7 +149,7 @@ def main(config: Config, args) -> None:
 
     root.stringvars.add("test01")
     root.buttons.add("Test01", _test01)
-    root.labels.add(root.stringvars.get_instance("test01"))
+    root.labels.add(root.stringvars["test01"])
     root.lf()
 
     root.labels.add("Big Text", scale="big", fullspan=True)

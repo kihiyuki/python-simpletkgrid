@@ -117,9 +117,6 @@ class _DictLikeObjects(object):
             self._data[key].set(defaultvalue)
         return None
 
-    def get_instance(self, key: Any):
-        return self._data[key]
-
     def get(self, key: Any) -> str:
         return self._data[key].get()
 
@@ -127,10 +124,10 @@ class _DictLikeObjects(object):
         return self._data[key].set(value)
 
     def __getitem__(self, key: Any):
-        return self.get(key=key)
+        return self._data[key]
 
     def __setitem__(self, key: Any, value: str):
-        return self.set(key=key, value=value)
+        return self._data.__setitem__(key, value)
 
     def items(self):
         return self._data.items()
@@ -287,7 +284,7 @@ class Entries(BaseEntries):
             width = self.defaultwidth
         _ret =  super().add(key, defaultvalue, width=width, master=self._frame, **kwargs)
         self.set(key, value)
-        self.get_instance(key).grid(**self._gridkw.pull())
+        self[key].grid(**self._gridkw.pull())
         return _ret
 
 
@@ -394,6 +391,7 @@ class SubWindow(Toplevel):
         self.frame.grid()
         self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
         self.labelkw = LabelKw(fontsize=fontsize)
+        self.stringvars = StringVars([], defaultvalue="")
 
         self.labels: Labels
         self.buttons: Buttons
