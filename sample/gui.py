@@ -139,7 +139,7 @@ def main(config: Config, args) -> None:
         resizable=False,
         maxcolumn=4,
         padding=20,
-        defaultwidth=30,
+        defaultwidth=25,
     )
     root.buttons.add("[O]pen workdir", _open)
     root.lf()

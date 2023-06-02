@@ -190,12 +190,25 @@ class BaseGridObject(object):
         self.defaultwidth = defaultwidth
         return None
 
-    def _update_kwargs(self, kwargs: dict) -> dict:
+    def _update_kwargs(
+        self,
+        kwargs: dict,
+        gridkw: Optional[GridKw],
+        columnspan: Optional[int],
+    ) -> dict:
         # width
         if "width" in kwargs:
             pass
         elif self.defaultwidth is not None:
-            kwargs["width"] = self.defaultwidth
+            if columnspan is not None:
+                pass
+            elif gridkw is not None:
+                columnspan = gridkw.columnspan
+            else:
+                columnspan = 1
+            kwargs["width"] = self.defaultwidth * columnspan
+            if columnspan > 1:
+                kwargs["width"] += int((columnspan - 1) * 1.9)  # XXX: hardcode
         return kwargs
 
     def add(
@@ -240,7 +253,7 @@ class BaseLabels(BaseGridObject):
     ) -> None:
         _kwargs = kwargs.copy()
         _kwargs.update(labelkw)
-        kwargs = self._update_kwargs(kwargs)
+        kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
         if type(text) is str:
             _obj = ttk.Label(self.frame, text=text, **_kwargs)
         else:
@@ -259,7 +272,7 @@ class BaseButtons(BaseGridObject):
         fullspan: bool = False,
         **kwargs,  # Button
     ) -> None:
-        kwargs = self._update_kwargs(kwargs)
+        kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
         _obj = ttk.Button(self.frame, text=text, command=command, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
@@ -276,7 +289,7 @@ class BaseRadioButtons(BaseGridObject):
             fullspan: bool = False,
             **kwargs,  # RadioButton
         ) -> None:
-        kwargs = self._update_kwargs(kwargs)
+        kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
         _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
