@@ -455,8 +455,8 @@ class RootWindow(Tk):
         )
         return _ret
 
-    def lf(self, **kwargs) -> None:
-        return self.gridkw.lf(**kwargs)
+    def lf(self, *args, **kwargs) -> None:
+        return self.gridkw.lf(*args, **kwargs)
 
     def close(self, event=None) -> None:
         self.destroy()
@@ -509,8 +509,8 @@ class SubWindow(Toplevel):
         )
         return _ret
 
-    def lf(self, **kwargs) -> None:
-        return self.gridkw.lf(**kwargs)
+    def lf(self, *args, **kwargs) -> None:
+        return self.gridkw.lf(*args, **kwargs)
 
     def close(self, event=None) -> None:
         self.grab_release()
