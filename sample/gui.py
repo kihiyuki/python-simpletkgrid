@@ -162,7 +162,7 @@ def main(config: Config, args) -> None:
     root.buttons.add("Btn3(width=20)", _do_nothing, width=20)
     root.buttons.add("Btn4", _do_nothing)
     root.buttons.add("Btn5", _do_nothing)
-    root.lf()
+    root.lf(2)
 
     root.buttons.add("About[F1]", _about)
     root.buttons.add("[C]onfig", _config)

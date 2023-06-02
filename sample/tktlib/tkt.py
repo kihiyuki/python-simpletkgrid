@@ -455,8 +455,11 @@ class RootWindow(Tk):
         )
         return _ret
 
-    def lf(self, *args, **kwargs) -> None:
-        return self.gridkw.lf(*args, **kwargs)
+    def lf(self, n: int = 1) -> None:
+        self.gridkw.lf(1)
+        for _ in range(n - 1):
+            self.labels.add("", fullspan=True)
+        return None
 
     def close(self, event=None) -> None:
         self.destroy()
@@ -509,8 +512,11 @@ class SubWindow(Toplevel):
         )
         return _ret
 
-    def lf(self, *args, **kwargs) -> None:
-        return self.gridkw.lf(*args, **kwargs)
+    def lf(self, n: int = 1) -> None:
+        self.gridkw.lf(1)
+        for _ in range(n - 1):
+            self.labels.add("", fullspan=True)
+        return None
 
     def close(self, event=None) -> None:
         self.grab_release()
