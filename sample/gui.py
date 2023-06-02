@@ -2,20 +2,16 @@ import subprocess
 import webbrowser
 from datetime import datetime
 from tkinter import (
-    filedialog,
     messagebox,
-    StringVar,
 )
 
 from .tktlib import (
     Config,
     RootWindow,
     SubWindow,
-    Entries,
     dialog,
 )
 from .define import (
-    __version__,
     APPNAME_FULL,
     URL,
     messages,
@@ -114,7 +110,7 @@ def main(config: Config, args) -> None:
         subprocess.Popen(["explorer",  config["workdir"]], shell=True)
         return None
 
-    def _export(event=None):
+    def _export(event=None) -> None:
         now = datetime.now().strftime("%Y%m%d%H%M%S")
         filename = "hoge_" + now
         extention = ".txt"
@@ -127,13 +123,16 @@ def main(config: Config, args) -> None:
         return None
 
     def _about(event=None):
-        return AboutWindow()
+        AboutWindow()
+        return None
 
     def _config(event=None):
-        return ConfigWindow()
+        ConfigWindow()
+        return None
 
     def _test01(event=None):
-        return TestWindow01()
+        TestWindow01()
+        return None
 
     root = RootWindow(
         title=APPNAME_FULL,
@@ -141,10 +140,10 @@ def main(config: Config, args) -> None:
         maxcolumn=4,
         padding=20,
     )
-    root.buttons.add("[O]pen", _open)
+    root.buttons.add("[O]pen workdir", _open)
     root.lf()
 
-    root.buttons.add("Export", _export)
+    root.buttons.add("Export to file", _export)
     root.lf()
 
     root.stringvars.add("test01")
@@ -155,6 +154,7 @@ def main(config: Config, args) -> None:
     root.labels.add("Big Text", scale="big", fullspan=True)
     root.labels.add("Medium Text", fullspan=True)
     root.labels.add("Small Text", scale="small", fullspan=True)
+
     root.buttons.add("dummyBtn1", _do_nothing)
     root.buttons.add("dummyBtn2", _do_nothing)
     root.buttons.add("dummyBtn3", _do_nothing)

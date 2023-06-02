@@ -71,22 +71,18 @@ class GridKw(object):
             self.column = column
         return None
 
-    def pull(self, fullspan: bool = False) -> dict:
-        row = self.row
-        column = self.column
-        sticky = self.sticky
-        columnspan = self.columnspan
+    def pull(self, fullspan: bool = False) -> Dict[str, Any]:
+        _ret = dict(
+            row = self.row,
+            column = self.column,
+            columnspan = self.maxcolumn if fullspan else self.columnspan,
+            sticky = self.sticky,
+        )
         if fullspan:
-            columnspan = self.maxcolumn
             self.lf()
         else:
             self.next()
-        return dict(
-            row = row,
-            column = column,
-            columnspan = columnspan,
-            sticky = sticky,
-        )
+        return _ret
 
 
 class _DictLikeObjects(object):
@@ -356,8 +352,8 @@ class RootWindow(Tk):
         )
         return _ret
 
-    def lf(self) -> None:
-        return self.gridkw.lf()
+    def lf(self, **kwargs) -> None:
+        return self.gridkw.lf(**kwargs)
 
     def close(self, event=None) -> None:
         self.destroy()
@@ -407,6 +403,9 @@ class SubWindow(Toplevel):
             entry=entry,
         )
         return _ret
+
+    def lf(self, **kwargs) -> None:
+        return self.gridkw.lf(**kwargs)
 
     def close(self, event=None) -> None:
         self.grab_release()
