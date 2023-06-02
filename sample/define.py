@@ -9,12 +9,10 @@ DEFAULT_CONFIG = dict(
     n = 30,
 )
 
-
 APPNAME = "sample"
 APPNAME_LONG = "Sample-tool"
 APPNAME_FULL = f"{APPNAME_LONG} (Ver: {__version__})"
 URL = "https://github.com/kihiyuki/tkinter-template"
-
 
 class messages(object):
     @dataclass(frozen=True)
