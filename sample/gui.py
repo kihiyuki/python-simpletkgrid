@@ -156,7 +156,7 @@ def main(config: Config, args) -> None:
     root.labels.add("Label(normal)", fullspan=True)
     root.labels.add("Label(fontscale='small')", fontscale="small", fullspan=True)
 
-    root.buttons.add("dummyBtn1", _do_nothing, columnspan=3)
+    root.buttons.add("dummyBtn1", _do_nothing, columnspan=3, width=30)
     root.buttons.add("dummyBtn2", _do_nothing)
     root.buttons.add("dummyBtn3", _do_nothing)
     root.buttons.add("dummyBtn3", _do_nothing)
