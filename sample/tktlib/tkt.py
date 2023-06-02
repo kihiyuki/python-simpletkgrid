@@ -15,6 +15,7 @@ from tkinter import (
     filedialog,
     messagebox,
     W,
+    CENTER,
     END,
 )
 
@@ -25,6 +26,7 @@ class LabelKw(dict):
     def __init__(self, fontsize: int = FONTSIZE):
         return super().__init__(
             font = ("", fontsize),
+            # anchor = CENTER,
         )
 
     def specify_scale(self, scale: float) -> dict:

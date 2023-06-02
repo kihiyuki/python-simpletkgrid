@@ -151,9 +151,11 @@ def main(config: Config, args) -> None:
     root.labels.add(root.stringvars["test01"])
     root.lf()
 
-    root.labels.add("Big Text", scale="big", fullspan=True)
-    root.labels.add("Medium Text", fullspan=True)
-    root.labels.add("Small Text", scale="small", fullspan=True)
+    root.labels.add("Text(scale=2.0)", scale=2.0, fullspan=True)
+    root.labels.add("'Big' Text", scale="big", fullspan=True)
+    root.labels.add("Normal Text", fullspan=False)
+    root.labels.add("'Small' Text", scale="small", fullspan=False)
+    root.lf()
 
     root.buttons.add("dummyBtn1", _do_nothing)
     root.buttons.add("dummyBtn2", _do_nothing)
