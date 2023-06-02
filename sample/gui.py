@@ -159,10 +159,8 @@ def main(config: Config, args) -> None:
     root.buttons.add("dummyBtn1", _do_nothing, columnspan=3)
     root.buttons.add("dummyBtn2", _do_nothing)
     root.buttons.add("dummyBtn3", _do_nothing)
-    root.buttons.add("dummyBtn4", _do_nothing)
-    root.buttons.add("dummyBtn5", _do_nothing)
-    root.buttons.add("dummyBtn6", _do_nothing)
-    root.buttons.add("dummyBtn7", _do_nothing)
+    root.buttons.add("dummyBtn3", _do_nothing)
+    root.buttons.add("dummyBtn3", _do_nothing)
     root.lf()
 
     root.buttons.add("About[F1]", _about)

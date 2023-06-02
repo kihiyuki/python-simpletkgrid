@@ -201,16 +201,19 @@ class BaseGridObject(object):
         if name is None:
             name = text
         if type(name) is not str:
-            name = "GRIDOBJECT_"
+            name = "GRIDOBJECT"
         if name in self._data:
             _unique = False
             for _ in range(1000):
-                if name + str(self._nameid) not in self._data:
+                _name = f"{name}_{self._nameid}"
+                if _name not in self._data:
                     _unique = True
-                    name = name + str(self._nameid)
+                    name = _name
                     break
+                self._nameid += 1
             if not _unique:
                 raise ValueError(f"Name '{name}' is always used")
+        print(name)
         self._data[name] = __object
         self._nameid += 1
         return self._data[name].grid(**gridkw.pull(columnspan=columnspan, fullspan=fullspan))
