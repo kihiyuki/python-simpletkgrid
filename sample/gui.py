@@ -25,15 +25,13 @@ from .define import (
 def main(config: Config, args) -> None:
     class AboutWindow(SubWindow):
         def __init__(self) -> None:
-            ret = super().__init__(title="About", button=True, label=True)
-
+            _ret = super().__init__(title="About")
             self.labels.add(APPNAME_FULL, scale="big")
             self.labels.add(f"Website: {URL}")
-
             self.buttons.add("Open Website", self.open_url)
-            self.buttons.add("Close", self.close)
-
-            return ret
+            self.buttons.add("Close[ESC]", self.close)
+            self.bind("<Escape>", root.close)
+            return _ret
 
         def open_url(event=None) -> None:
             _ = webbrowser.open_new(URL)
@@ -41,7 +39,7 @@ def main(config: Config, args) -> None:
 
     class ConfigWindow(SubWindow):
         def __init__(self, entry_width: int = 80) -> None:
-            _ret = super().__init__(title="Config", fontsize=10, button=True, label=True)
+            _ret = super().__init__(title="Config", fontsize=10)
 
             self.entries = Entries()
 
@@ -122,24 +120,15 @@ def main(config: Config, args) -> None:
         return None
 
     def _export(event=None):
-        export_file = filedialog.asksaveasfilename(
-            filetypes = [("CSV file", ".csv")],
-            defaultextension = "csv",
-            title="Export",
-            initialfile = "{}_{}.csv".format(
-                "hoge",
-                datetime.now().strftime("%Y%m%d%H%M%S"),
-            ),
+        now = datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = "hoge_" + now
+        extention = ".txt"
+        dialog.asksave(
+            "hogefuga:" + now,
+            filetypes=[("Text file", extention)],
+            initialdir=config["workdir"],
+            initialfile=filename+extention,
         )
-        if len(export_file) == 0:
-            return None
-        try:
-            # _save(export_file)
-            pass
-        except Exception as e:
-            messagebox.showwarning("Export failed", e)
-        else:
-            messagebox.showinfo("Export", f"Successfully saved.")
         return None
 
     def _about(event=None):
@@ -180,14 +169,15 @@ def main(config: Config, args) -> None:
     root.buttons.add("dummyBtn7", _do_nothing)
     root.lf()
 
-    root.buttons.add("About", _about)
-    root.buttons.add("Config", _config)
+    root.buttons.add("About[F1]", _about)
+    root.buttons.add("[C]onfig", _config)
     root.buttons.add("Reload[F5]", _do_nothing)
     root.buttons.add("Quit[Esc]", root.close)
     root.lf()
 
     # keybind
     root.bind("o", _open)
+    root.bind("c", _config)
     root.bind("<F1>", _about)
     root.bind("<F5>", _do_nothing)
     root.bind("<Escape>", root.close)

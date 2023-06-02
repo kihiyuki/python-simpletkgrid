@@ -3,7 +3,7 @@
 # Released under the MIT license
 # Supported Python versions: 3.8
 # Requires: (using only Python Standard Library)
-from typing import Optional, Union, Dict, Any, Tuple
+from typing import Optional, Union, Dict, Any, List, Tuple
 from pathlib import Path
 from tkinter import (
     Tk,
@@ -13,6 +13,7 @@ from tkinter import (
     StringVar,
     Entry,
     filedialog,
+    messagebox,
     W,
     END,
 )
@@ -388,7 +389,7 @@ class dialog(object):
         mode: str = "f",
         returntype: str = "str",
     ) -> Union[str, Path, None]:
-        """askopenfilename/askdirectory
+        """tkinter.filedialog.askopenfilename() / askdirectory()
 
         Args:
             mode: 'f'=file, 'd'=dir
@@ -428,3 +429,42 @@ class dialog(object):
                 raise ValueError(f"Invalid returntype: '{returntype}'")
         else:
             return None
+
+    @staticmethod
+    def asksave(
+        data: Union[str, bytes],
+        title: str = "Save file",
+        mode: str = "t",
+        filetypes: Optional[List[Tuple[str]]] = None,
+        initialdir: Union[Path, str, None] = None,
+        initialfile: Union[Path, str, None] = None,
+        **kwargs,
+    ) -> bool:
+        """tkinter.filedialog.asksaveasfilename()
+
+        Args:
+            mode: 't'=text, 'b'=binary
+            filetypes: example=[('CSV file', '.csv')]
+
+        Retruns:
+            bool: True=saved
+        """
+        _filepath = filedialog.asksaveasfilename(
+            title=title,
+            filetypes=filetypes,
+            initialdir=initialdir,
+            initialfile=initialfile,
+            **kwargs,
+        )
+        if len(_filepath) == 0:
+            # cancel
+            return False
+        try:
+            mode = "w" + mode
+            with Path(_filepath).open(mode=mode) as f:
+                f.write(data)
+        except Exception as e:
+            messagebox.showerror("File save error", str(e))
+            return False
+        messagebox.showinfo("File save", "Successfully saved.")
+        return True
