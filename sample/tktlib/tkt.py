@@ -183,11 +183,20 @@ class BaseEntries(_DictLikeObjects):
 
 
 class BaseGridObject(object):
-    def __init__(self, frame: ttk.Frame) -> None:
+    def __init__(self, frame: ttk.Frame, defaultwidth: Optional[int] = None) -> None:
         self._data: Dict[str, ttk.Widget] = dict()
-        self.frame: ttk.Frame = frame
         self._nameid: int = 0
+        self.frame = frame
+        self.defaultwidth = defaultwidth
         return None
+
+    def _update_kwargs(self, kwargs: dict) -> dict:
+        # width
+        if "width" in kwargs:
+            pass
+        elif self.defaultwidth is not None:
+            kwargs["width"] = self.defaultwidth
+        return kwargs
 
     def add(
         self,
@@ -227,10 +236,11 @@ class BaseLabels(BaseGridObject):
         name: Optional[str] = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,
+        **kwargs,  # Label
     ) -> None:
         _kwargs = kwargs.copy()
         _kwargs.update(labelkw)
+        kwargs = self._update_kwargs(kwargs)
         if type(text) is str:
             _obj = ttk.Label(self.frame, text=text, **_kwargs)
         else:
@@ -247,8 +257,9 @@ class BaseButtons(BaseGridObject):
         name: Optional[str] = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,
+        **kwargs,  # Button
     ) -> None:
+        kwargs = self._update_kwargs(kwargs)
         _obj = ttk.Button(self.frame, text=text, command=command, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
@@ -263,8 +274,9 @@ class BaseRadioButtons(BaseGridObject):
             name: Optional[str] = None,
             columnspan: Optional[int] = None,
             fullspan: bool = False,
-            **kwargs,
+            **kwargs,  # RadioButton
         ) -> None:
+        kwargs = self._update_kwargs(kwargs)
         _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
@@ -357,6 +369,7 @@ def _init_gridobjects(
     frame: ttk.Frame,
     gridkw: GridKw,
     labelkw: LabelKw,
+    defaultwidth: Optional[int],
     label: bool,
     button: bool,
     radiobutton: bool,
@@ -364,18 +377,22 @@ def _init_gridobjects(
 ) -> tuple:
     if label:
         labels = Labels(frame, gridkw, labelkw)
+        labels.defaultwidth = defaultwidth
     else:
         labels = None
     if button:
         buttons = Buttons(frame, gridkw)
+        buttons.defaultwidth = defaultwidth
     else:
         buttons = None
     if radiobutton:
         radiobuttons = RadioButtons(frame, gridkw)
+        radiobuttons.defaultwidth = defaultwidth
     else:
         radiobuttons = None
     if entry:
         entries = Entries(frame, gridkw, defaultvalue="")
+        entries.defaultwidth = defaultwidth
     else:
         entries = None
     return (labels, buttons, radiobuttons, entries)
@@ -386,8 +403,11 @@ class RootWindow(Tk):
         self,
         title: str = "",
         resizable: Union[bool, Tuple[bool]] = (False, False),
-        maxcolumn: int = 4,
         padding: int = 20,
+        maxcolumn: int = 4,
+        sticky: str = W,
+        fontsize: int = FONTSIZE,
+        defaultwidth: Optional[int] = None,
         label: bool = True,
         button: bool = True,
         radiobutton: bool = True,
@@ -402,8 +422,8 @@ class RootWindow(Tk):
         self.resizable(*resizable)
         self.frame = ttk.Frame(self, padding=padding)
         self.frame.grid()
-        self.gridkw = GridKw(maxcolumn=maxcolumn)
-        self.labelkw = LabelKw()
+        self.gridkw = GridKw(maxcolumn=maxcolumn, sticky=sticky)
+        self.labelkw = LabelKw(fontsize=fontsize)
         self.stringvars = StringVars([], defaultvalue="")
 
         self.labels: Labels
@@ -414,6 +434,7 @@ class RootWindow(Tk):
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
+            defaultwidth=defaultwidth,
             label=label,
             button=button,
             radiobutton=radiobutton,
@@ -438,6 +459,7 @@ class SubWindow(Toplevel):
         maxcolumn: int = 1,
         sticky: str = W,
         fontsize: int = FONTSIZE,
+        defaultwidth: Optional[int] = None,
         label: bool = True,
         button: bool = True,
         radiobutton: bool = True,
@@ -466,6 +488,7 @@ class SubWindow(Toplevel):
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
+            defaultwidth=defaultwidth,
             label=label,
             button=button,
             radiobutton=radiobutton,

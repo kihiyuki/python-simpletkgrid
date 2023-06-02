@@ -139,6 +139,7 @@ def main(config: Config, args) -> None:
         resizable=False,
         maxcolumn=4,
         padding=20,
+        defaultwidth=30,
     )
     root.buttons.add("[O]pen workdir", _open)
     root.lf()
@@ -156,11 +157,11 @@ def main(config: Config, args) -> None:
     root.labels.add("Label(normal)", fullspan=True)
     root.labels.add("Label(fontscale='small')", fontscale="small", fullspan=True)
 
-    root.buttons.add("dummyBtn1", _do_nothing, columnspan=3, width=30)
-    root.buttons.add("dummyBtn2", _do_nothing)
-    root.buttons.add("dummyBtn3", _do_nothing)
-    root.buttons.add("dummyBtn3", _do_nothing)
-    root.buttons.add("dummyBtn3", _do_nothing)
+    root.buttons.add("Btn1(columnspan=3)", _do_nothing, columnspan=3)
+    root.buttons.add("Btn2", _do_nothing)
+    root.buttons.add("Btn3(width=20)", _do_nothing, width=20)
+    root.buttons.add("Btn4", _do_nothing)
+    root.buttons.add("Btn5", _do_nothing)
     root.lf()
 
     root.buttons.add("About[F1]", _about)
