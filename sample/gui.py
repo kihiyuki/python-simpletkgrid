@@ -34,9 +34,9 @@ def main(config: Config, args) -> None:
             return None
 
     class ConfigWindow(SubWindow):
-        def __init__(self, entry_width: int = 80) -> None:
-            _ret = super().__init__(title="Config", fontsize=10)
-            self.entries.defaultwidth = entry_width
+        def __init__(self) -> None:
+            _ret = super().__init__(title="Config", fontsize=10, maxcolumn=1)
+            self.entries.defaultwidth = 100
 
             def _filediag(
                 k: str,
@@ -48,15 +48,18 @@ def main(config: Config, args) -> None:
                 return None
 
             for k, v in config.to_dict().items():
-                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}")
+                self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}", fullspan=True)
                 self.entries.add(k, str(v))
                 # if type(config.default[k]).__name__ in ["Path"]:
                 #     self.buttons.add("Browse", lambda: _diag(k, "file"))
                 if k == "workdir":
-                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"))
+                    self.buttons.add("Browse", lambda: _filediag("workdir", "dir"), fullspan=True)
 
-            self.buttons.add("Save[Enter]", self.save)
-            self.buttons.add("Cancel[ESC]", self.close)
+            # blank row
+            self.labels.add("", fullspan=True)
+
+            self.buttons.add("Save[Enter]", self.save, fullspan=True)
+            self.buttons.add("Cancel[ESC]", self.close, fullspan=True)
             self.bind("<Return>", self.save)
             self.bind("<Escape>", self.close)
 
