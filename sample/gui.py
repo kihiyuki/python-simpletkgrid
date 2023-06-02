@@ -22,7 +22,7 @@ def main(config: Config, args) -> None:
     class AboutWindow(SubWindow):
         def __init__(self) -> None:
             _ret = super().__init__(title="About")
-            self.labels.add(APPNAME_FULL, scale="big")
+            self.labels.add(APPNAME_FULL, fontscale="big")
             self.labels.add(f"Website: {URL}")
             self.buttons.add("Open Website", self.open_url)
             self.buttons.add("Close[ESC]", self.close)
@@ -151,11 +151,10 @@ def main(config: Config, args) -> None:
     root.labels.add(root.stringvars["test01"])
     root.lf()
 
-    root.labels.add("Text(scale=2.0)", scale=2.0, fullspan=True)
-    root.labels.add("'Big' Text", scale="big", fullspan=True)
-    root.labels.add("Normal Text", fullspan=False)
-    root.labels.add("'Small' Text", scale="small", fullspan=False)
-    root.lf()
+    root.labels.add("Label(fontscale=2.0)", fontscale=2.0, fullspan=True)
+    root.labels.add("Label(fontscale='big')", fontscale="big", fullspan=True)
+    root.labels.add("Label(normal)", fullspan=True)
+    root.labels.add("Label(fontscale='small')", fontscale="small", fullspan=True)
 
     root.buttons.add("dummyBtn1", _do_nothing)
     root.buttons.add("dummyBtn2", _do_nothing)

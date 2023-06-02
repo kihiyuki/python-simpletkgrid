@@ -21,7 +21,7 @@ from tkinter import (
 
 
 FONTSIZE = 12
-SCALE = 1.5
+FONTSCALE = 1.5
 class LabelKw(dict):
     def __init__(self, fontsize: int = FONTSIZE):
         return super().__init__(
@@ -29,18 +29,37 @@ class LabelKw(dict):
             # anchor = CENTER,
         )
 
-    def specify_scale(self, scale: float) -> dict:
+    def get_customized(
+        self,
+        font: Optional[str] = None,
+        fontscale: Union[float, str, None] = None,
+    ) -> dict:
         _d = self.copy()
-        _d["font"] = ("", int(_d["font"][1] * scale))
+
+        # font
+        if font is not None:
+            _d["font"] = (font, _d["font"][1])
+
+        # fontscale
+        if fontscale is not None:
+            def _scalefont(x: tuple, fontscale: float) -> tuple:
+                return (x[0], int(x[1] * fontscale))
+            if type(fontscale) is str:
+                if fontscale == "big":
+                    _d["font"] = _scalefont(_d["font"], FONTSCALE)
+                elif fontscale == "small":
+                    _d["font"] = _scalefont(_d["font"], 1 / FONTSCALE)
+            else:
+                _d["font"] = _scalefont(_d["font"], fontscale)
         return _d
 
     @property
     def big(self) -> dict:
-        return self.specify_scale(SCALE)
+        return self.get_customized(fontscale="big")
 
     @property
     def small(self) -> dict:
-        return self.specify_scale(1 / SCALE)
+        return self.get_customized(fontscale="small")
 
 
 class GridKw(object):
@@ -179,8 +198,14 @@ class BaseGridObject(object):
         if type(name) is not str:
             name = "GRIDOBJECT_"
         if name in self._data:
-            # raise ValueError(f"Name '{name}' is always used")
-            name += str(self._nameid)
+            _unique = False
+            for _ in range(1000):
+                if name + str(self._nameid) not in self._data:
+                    _unique = True
+                    name = name + str(self._nameid)
+                    break
+            if not _unique:
+                raise ValueError(f"Name '{name}' is always used")
         self._data[name] = __object
         self._nameid += 1
         return self._data[name].grid(**gridkw.pull(fullspan=fullspan))
@@ -234,17 +259,10 @@ class Labels(BaseLabels):
         self._gridkw = gridkw
         self._labelkw = labelkw
         return super().__init__(frame)
-    def add(self, text: Any, scale: Union[str, float] = 1.0, labelkw: Optional[LabelKw] = None, name: Optional[str] = None, fullspan: bool = False) -> None:
+    def add(self, text: Any, labelkw: Optional[LabelKw] = None, name: Optional[str] = None, fullspan: bool = False, **kwargs) -> None:
         if labelkw is None:
             labelkw = self._labelkw
-        if type(scale) is str:
-            if scale == "big":
-                labelkw = labelkw.big
-            elif scale == "small":
-                labelkw = labelkw.small
-        else:
-            labelkw = labelkw.specify_scale(scale)
-        return super().add(text, labelkw, self._gridkw, name, fullspan)
+        return super().add(text, labelkw.get_customized(**kwargs), self._gridkw, name, fullspan)
 
 
 class Buttons(BaseButtons):
