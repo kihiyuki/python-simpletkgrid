@@ -77,8 +77,8 @@ class GridKw(object):
         self.column = 0
         return None
 
-    def next(self) -> None:
-        self.column += 1
+    def next(self, n: int = 1) -> None:
+        self.column += n
         if self.maxcolumn is None:
             pass
         elif self.column >= self.maxcolumn:
@@ -92,17 +92,21 @@ class GridKw(object):
             self.column = column
         return None
 
-    def pull(self, fullspan: bool = False) -> Dict[str, Any]:
+    def pull(self, columnspan: Optional[int] = None, fullspan: bool = False) -> Dict[str, Any]:
+        if fullspan:
+            columnspan = self.maxcolumn
+        elif columnspan is None:
+            columnspan = self.columnspan
         _ret = dict(
             row = self.row,
             column = self.column,
-            columnspan = self.maxcolumn if fullspan else self.columnspan,
+            columnspan = columnspan,
             sticky = self.sticky,
         )
         if fullspan:
             self.lf()
         else:
-            self.next()
+            self.next(columnspan)
         return _ret
 
 
@@ -191,6 +195,7 @@ class BaseGridObject(object):
         gridkw: GridKw,
         text: Optional[str] = None,
         name: Optional[str] = None,
+        columnspan: Optional[int] = None,
         fullspan: bool = False,
     ) -> None:
         if name is None:
@@ -208,7 +213,7 @@ class BaseGridObject(object):
                 raise ValueError(f"Name '{name}' is always used")
         self._data[name] = __object
         self._nameid += 1
-        return self._data[name].grid(**gridkw.pull(fullspan=fullspan))
+        return self._data[name].grid(**gridkw.pull(columnspan=columnspan, fullspan=fullspan))
 
 
 class BaseLabels(BaseGridObject):
@@ -218,13 +223,14 @@ class BaseLabels(BaseGridObject):
         labelkw: LabelKw,
         gridkw: GridKw,
         name: Optional[str] = None,
+        columnspan: Optional[int] = None,
         fullspan: bool = False,
     ) -> None:
         if type(text) is str:
             _obj = ttk.Label(self.frame, text=text, **labelkw)
         else:
             _obj = ttk.Label(self.frame, textvariable=text, **labelkw)
-        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
 
 class BaseButtons(BaseGridObject):
@@ -234,10 +240,11 @@ class BaseButtons(BaseGridObject):
         command,
         gridkw: GridKw,
         name: Optional[str] = None,
+        columnspan: Optional[int] = None,
         fullspan: bool = False,
     ) -> None:
         _obj = ttk.Button(self.frame, text=text, command=command)
-        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
 
 class BaseRadioButtons(BaseGridObject):
@@ -248,10 +255,11 @@ class BaseRadioButtons(BaseGridObject):
             variable: Variable,
             gridkw: GridKw,
             name: Optional[str] = None,
+            columnspan: Optional[int] = None,
             fullspan: bool = False,
         ) -> None:
         _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value)
-        return super().add(_obj, gridkw=gridkw, text=text, name=name, fullspan=fullspan)
+        return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
 
 
 class Labels(BaseLabels):
@@ -259,26 +267,26 @@ class Labels(BaseLabels):
         self._gridkw = gridkw
         self._labelkw = labelkw
         return super().__init__(frame)
-    def add(self, text: Any, labelkw: Optional[LabelKw] = None, name: Optional[str] = None, fullspan: bool = False, **kwargs) -> None:
+    def add(self, text: Any, labelkw: Optional[LabelKw] = None, name: Optional[str] = None, columnspan: Optional[int] = None, fullspan: bool = False, **kwargs) -> None:
         if labelkw is None:
             labelkw = self._labelkw
-        return super().add(text, labelkw.get_customized(**kwargs), self._gridkw, name, fullspan)
+        return super().add(text, labelkw.get_customized(**kwargs), self._gridkw, name, columnspan, fullspan)
 
 
 class Buttons(BaseButtons):
     def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
         self._gridkw = gridkw
         return super().__init__(frame)
-    def add(self, text: str, command, name: Optional[str] = None, fullspan: bool = False) -> None:
-        return super().add(text, command, self._gridkw, name, fullspan)
+    def add(self, text: str, command, name: Optional[str] = None, columnspan: Optional[int] = None, fullspan: bool = False) -> None:
+        return super().add(text, command, self._gridkw, name, columnspan, fullspan)
 
 
 class RadioButtons(BaseRadioButtons):
     def __init__(self, frame: ttk.Frame, gridkw: GridKw) -> None:
         self._gridkw = gridkw
         return super().__init__(frame)
-    def add(self, text: str, value: Any, variable: Variable, name: str = None, fullspan: bool = False) -> None:
-        return super().add(text, value, variable, self._gridkw, name, fullspan)
+    def add(self, text: str, value: Any, variable: Variable, name: str = None, columnspan: Optional[int] = None, fullspan: bool = False) -> None:
+        return super().add(text, value, variable, self._gridkw, name, columnspan, fullspan)
 
 
 class Entries(BaseEntries):
@@ -300,7 +308,7 @@ class Entries(BaseEntries):
             width = self.defaultwidth
         _ret =  super().add(key, defaultvalue, width=width, master=self._frame, **kwargs)
         self.set(key, value)
-        self[key].grid(**self._gridkw.pull())
+        self._data[key].grid(**self._gridkw.pull(fullspan=True))
         return _ret
 
 
