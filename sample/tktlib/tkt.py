@@ -94,27 +94,27 @@ class _DictLikeObjects(object):
         self,
         datatype,
         keys: Union[list, tuple, set, None] = None,
-        defaltvalue: Optional[str] = None,
+        defaultvalue: Optional[str] = None,
         **kwargs,
     ) -> None:
         self._datatype = datatype
         self._data: Dict[Any, self._datatype] = {}
-        self._defaultvalue: Optional[str] = defaltvalue
+        self.defaultvalue: Optional[str] = defaultvalue
         if keys is not None:
             for k in keys:
                 self.add(k, **kwargs)
         return None
 
-    def add(self, key: Any, defaltvalue: Optional[str] = None, **kwargs) -> None:
+    def add(self, key: Any, defaultvalue: Optional[str] = None, **kwargs) -> None:
         if key in self._data.keys():
             raise KeyError(f"Key '{key}' already exists")
         self._data[key] = self._datatype(**kwargs)
-        if defaltvalue is None:
-            defaltvalue = self._defaultvalue
-        if defaltvalue is None:
+        if defaultvalue is None:
+            defaultvalue = self.defaultvalue
+        if defaultvalue is None:
             self._data[key].set(key)
         else:
-            self._data[key].set(defaltvalue)
+            self._data[key].set(defaultvalue)
         return None
 
     def get_instance(self, key: Any):
@@ -139,11 +139,11 @@ class StringVars(_DictLikeObjects):
     def __init__(
         self,
         keys: Union[list, tuple, set, None] = None,
-        defaltvalue: Optional[str] = None,
+        defaultvalue: Optional[str] = None,
         **kwargs,
     ) -> None:
         self._data: Dict[Any, StringVar]
-        return super().__init__(StringVar, keys=keys, defaltvalue=defaltvalue, **kwargs)
+        return super().__init__(StringVar, keys=keys, defaultvalue=defaultvalue, **kwargs)
 
 
 class SettableEntry(Entry):
@@ -153,15 +153,15 @@ class SettableEntry(Entry):
         return None
 
 
-class Entries(_DictLikeObjects):
+class BaseEntries(_DictLikeObjects):
     def __init__(
         self,
         keys: Union[list, tuple, set, None] = None,
-        defaltvalue: Optional[str] = None,
+        defaultvalue: Optional[str] = None,
         **kwargs,
     ) -> None:
         self._data: Dict[Any, SettableEntry]
-        return super().__init__(SettableEntry, keys=keys, defaltvalue=defaltvalue, **kwargs)
+        return super().__init__(SettableEntry, keys=keys, defaultvalue=defaultvalue, **kwargs)
 
 
 class BaseGridObject(object):
@@ -268,6 +268,29 @@ class RadioButtons(BaseRadioButtons):
         return super().add(text, value, variable, self._gridkw, name, fullspan)
 
 
+class Entries(BaseEntries):
+    def __init__(
+        self,
+        frame: ttk.Frame,
+        gridkw: GridKw,
+        keys: Union[list, tuple, set, None] = None,
+        defaultvalue: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        self._data: Dict[Any, SettableEntry]
+        self._frame = frame
+        self._gridkw = gridkw
+        self.defaultwidth: int = 80
+        return super().__init__(keys, defaultvalue, **kwargs)
+    def add(self, key: Any, value: str, defaultvalue: Optional[str] = None, width: Optional[int] = None, **kwargs) -> None:
+        if width is None:
+            width = self.defaultwidth
+        _ret =  super().add(key, defaultvalue, width=width, master=self._frame, **kwargs)
+        self.set(key, value)
+        self.get_instance(key).grid(**self._gridkw.pull())
+        return _ret
+
+
 def _init_gridobjects(
     frame: ttk.Frame,
     gridkw: GridKw,
@@ -275,6 +298,7 @@ def _init_gridobjects(
     label: bool,
     button: bool,
     radiobutton: bool,
+    entry: bool,
 ) -> tuple:
     if label:
         labels = Labels(frame, gridkw, labelkw)
@@ -288,7 +312,11 @@ def _init_gridobjects(
         radiobuttons = RadioButtons(frame, gridkw)
     else:
         radiobuttons = None
-    return (labels, buttons, radiobuttons)
+    if entry:
+        entries = Entries(frame, gridkw, defaultvalue="")
+    else:
+        entries = None
+    return (labels, buttons, radiobuttons, entries)
 
 
 class RootWindow(Tk):
@@ -300,7 +328,8 @@ class RootWindow(Tk):
         padding: int = 20,
         label: bool = True,
         button: bool = True,
-        radiobutton: bool = False,
+        radiobutton: bool = True,
+        entry: bool = True,
         **kwargs,
     ) -> None:
         _ret = super().__init__(**kwargs)
@@ -313,18 +342,20 @@ class RootWindow(Tk):
         self.frame.grid()
         self.gridkw = GridKw(maxcolumn=maxcolumn)
         self.labelkw = LabelKw()
-        self.stringvars = StringVars([], defaltvalue="")
+        self.stringvars = StringVars([], defaultvalue="")
 
         self.labels: Labels
         self.buttons: Buttons
         self.radiobuttons: RadioButtons
-        self.labels, self.buttons, self.radiobuttons = _init_gridobjects(
+        self.entries: Entries
+        self.labels, self.buttons, self.radiobuttons, self.entries = _init_gridobjects(
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
             label=label,
             button=button,
             radiobutton=radiobutton,
+            entry=entry,
         )
         return _ret
 
@@ -348,6 +379,7 @@ class SubWindow(Toplevel):
         label: bool = True,
         button: bool = True,
         radiobutton: bool = True,
+        entry: bool = True,
         **kwargs,
     ) -> None:
         _ret = super().__init__(**kwargs)
@@ -366,13 +398,15 @@ class SubWindow(Toplevel):
         self.labels: Labels
         self.buttons: Buttons
         self.radiobuttons: RadioButtons
-        self.labels, self.buttons, self.radiobuttons = _init_gridobjects(
+        self.entries: Entries
+        self.labels, self.buttons, self.radiobuttons, self.entries = _init_gridobjects(
             frame=self.frame,
             gridkw=self.gridkw,
             labelkw=self.labelkw,
             label=label,
             button=button,
             radiobutton=radiobutton,
+            entry=entry,
         )
         return _ret
 

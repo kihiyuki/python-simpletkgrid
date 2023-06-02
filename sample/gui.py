@@ -40,8 +40,7 @@ def main(config: Config, args) -> None:
     class ConfigWindow(SubWindow):
         def __init__(self, entry_width: int = 80) -> None:
             _ret = super().__init__(title="Config", fontsize=10)
-
-            self.entries = Entries()
+            self.entries.defaultwidth = entry_width
 
             def _filediag(
                 k: str,
@@ -54,9 +53,7 @@ def main(config: Config, args) -> None:
 
             for k, v in config.to_dict().items():
                 self.labels.add(f"{k}({type(v).__name__}): {messages.config.__getattribute__(k)}")
-                self.entries.add(k, master=self.frame, width=entry_width)
-                self.entries.set(k, str(v))
-                self.entries.get_instance(k).grid(**self.gridkw.pull())
+                self.entries.add(k, str(v))
                 # if type(config.default[k]).__name__ in ["Path"]:
                 #     self.buttons.add("Browse", lambda: _diag(k, "file"))
                 if k == "workdir":
