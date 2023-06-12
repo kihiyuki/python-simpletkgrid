@@ -5,7 +5,7 @@ from tkinter import (
     messagebox,
 )
 
-from .tktlib import (
+from src.simpletkgrid import (
     Config,
     RootWindow,
     SubWindow,
