@@ -3,8 +3,8 @@ from typing import Optional, List
 from pathlib import Path
 
 from .gui import main as gui_main
-from .tktlib import Config
-from .tktlib.config import DEFAULTSECT
+from src.simpletkgrid import Config
+from src.simpletkgrid.config import DEFAULTSECT
 from .define import (
     __version__,
     APPNAME,
