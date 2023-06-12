@@ -15,7 +15,6 @@ from tkinter import (
     filedialog,
     messagebox,
     W,
-    CENTER,
     END,
 )
 
@@ -118,6 +117,12 @@ class _DictLikeObjects(object):
         defaultvalue: Optional[str] = None,
         **kwargs,
     ) -> None:
+        """
+        Args:
+            datatype: class of data
+            keys: initial keys
+            **kwargs: datatype(**kwargs)
+        """
         self._datatype = datatype
         self._data: Dict[Any, self._datatype] = {}
         self.defaultvalue: Optional[str] = defaultvalue
@@ -127,6 +132,10 @@ class _DictLikeObjects(object):
         return None
 
     def add(self, key: Any, defaultvalue: Optional[str] = None, **kwargs) -> None:
+        """
+        Args:
+            **kwargs: datatype(**kwargs)
+        """
         if key in self._data.keys():
             raise KeyError(f"Key '{key}' already exists")
         self._data[key] = self._datatype(**kwargs)
@@ -223,7 +232,7 @@ class BaseGridObject(object):
         if name is None:
             name = text
         if type(name) is not str:
-            name = "GRIDOBJECT"
+            name = "GRIDOBJECT"  # hardcode
         if name in self._data:
             _unique = False
             for _ in range(1000):
@@ -249,8 +258,12 @@ class BaseLabels(BaseGridObject):
         name: Optional[str] = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,  # Label
+        **kwargs,
     ) -> None:
+        """
+        Args:
+            **kwargs: ttk.Label(**kwargs)
+        """
         _kwargs = kwargs.copy()
         _kwargs.update(labelkw)
         kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
@@ -270,8 +283,12 @@ class BaseButtons(BaseGridObject):
         name: Optional[str] = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,  # Button
+        **kwargs,
     ) -> None:
+        """
+        Args:
+            **kwargs: ttk.Button(**kwargs)
+        """
         kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
         _obj = ttk.Button(self.frame, text=text, command=command, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
@@ -287,8 +304,12 @@ class BaseRadioButtons(BaseGridObject):
             name: Optional[str] = None,
             columnspan: Optional[int] = None,
             fullspan: bool = False,
-            **kwargs,  # RadioButton
-        ) -> None:
+            **kwargs,
+    ) -> None:
+        """
+        Args:
+            **kwargs: ttk.Radiobutton(**kwargs)
+        """
         kwargs = self._update_kwargs(kwargs, gridkw=gridkw, columnspan=columnspan)
         _obj = ttk.Radiobutton(self.frame, text=text, variable=variable, value=value, **kwargs)
         return super().add(_obj, gridkw=gridkw, text=text, name=name, columnspan=columnspan, fullspan=fullspan)
@@ -308,7 +329,7 @@ class Labels(BaseLabels):
         fullspan: bool = False,
         font: Optional[str] = None,  # get_customized
         fontscale: Union[float, str, None] = None,  # get_customized
-        **kwargs,  # Label
+        **kwargs,
     ) -> None:
         if labelkw is None:
             labelkw = self._labelkw
@@ -326,7 +347,7 @@ class Buttons(BaseButtons):
         name: Optional[str] = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,  # Button
+        **kwargs,
     ) -> None:
         return super().add(text, command, self._gridkw, name, columnspan, fullspan, **kwargs)
 
@@ -343,7 +364,7 @@ class RadioButtons(BaseRadioButtons):
         name: str = None,
         columnspan: Optional[int] = None,
         fullspan: bool = False,
-        **kwargs,  # RadioButton
+        **kwargs,
     ) -> None:
         return super().add(text, value, variable, self._gridkw, name, columnspan, fullspan, **kwargs)
 
@@ -388,6 +409,10 @@ def _init_gridobjects(
     radiobutton: bool,
     entry: bool,
 ) -> tuple:
+    """
+    Returns:
+        (labels, buttons, radiobuttons, entries)
+    """
     if label:
         labels = Labels(frame, gridkw, labelkw)
         labels.defaultwidth = defaultwidth
@@ -456,12 +481,14 @@ class RootWindow(Tk):
         return _ret
 
     def lf(self, n: int = 1) -> None:
+        """Line Feed"""
         self.gridkw.lf(1)
         for _ in range(n - 1):
             self.labels.add("", fullspan=True)
         return None
 
     def close(self, event=None) -> None:
+        """Close root window"""
         self.destroy()
         return None
 
@@ -513,12 +540,14 @@ class SubWindow(Toplevel):
         return _ret
 
     def lf(self, n: int = 1) -> None:
+        """Line Feed"""
         self.gridkw.lf(1)
         for _ in range(n - 1):
             self.labels.add("", fullspan=True)
         return None
 
     def close(self, event=None) -> None:
+        """Close the window"""
         self.grab_release()
         self.destroy()
         return None
@@ -587,6 +616,7 @@ class dialog(object):
         Args:
             mode: 't'=text, 'b'=binary
             filetypes: example=[('CSV file', '.csv')]
+            **kwargs: filedialog.asksaveasfilename(**kwargs)
 
         Retruns:
             bool: True=saved
